@@ -6,19 +6,15 @@ dist/
 wheels/
 *.egg-info
 
-# IDE
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
+# Hidden files
+.*
+!.gitignore
+!.env.example
+!.python-version
+!.vscode
 
 # Virtual environments
 .venv
 
 # Others
 **/logs
-.*
-!.gitignore
-!.env.example
-!.python-version
