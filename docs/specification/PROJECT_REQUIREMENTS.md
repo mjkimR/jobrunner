@@ -324,15 +324,16 @@ graph TB
 
 ```
 /jobrunner
-├── /jobs                 # LLM 생성 코드 저장
-├── /templates            # Dagster 코드 템플릿
-├── /cli                  # jr CLI 구현체
+├── /docker               # Docker Compose, Dockerfile 등
 ├── /skills               # Host Agent용 SKILL.md
-├── /gateway              # [Phase 3] Local Agent Gateway
-├── /agents               # [Phase 3] Agent Manager
-├── /api                  # [Phase 3] FastAPI 백엔드
+├── /src
+│   ├── /jobs             # LLM 생성 코드 저장
+│   ├── /templates        # Dagster 코드 템플릿
+│   ├── /cli              # jr CLI 구현체
+│   ├── /gateway          # [Phase 3] Local Agent Gateway
+│   ├── /agents           # [Phase 3] Agent Manager
+│   └── /app              # [Phase 3] FastAPI 백엔드
 ├── dagster.yaml
-├── docker-compose.yml
 └── pyproject.toml
 ```
 
