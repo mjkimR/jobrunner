@@ -1,10 +1,23 @@
+name: jobrunner
 version: "3.8"
+
+# =============================================================================
+# JobRunner Docker Compose
+# =============================================================================
+# 3-container architecture:
+# 1. postgres: 메타데이터 저장
+# 2. dagster-webserver: UI + API (Dockerfile.dagster)
+# 3. dagster-daemon: 스케줄러/센서 (Dockerfile.dagster)
+# 4. usercode: gRPC code server (Dockerfile.usercode)
+# =============================================================================
+
+x-dagster-version: &dagster-version "1.9.14"
 
 services:
   # PostgreSQL - Dagster 메타데이터 저장
   postgres:
     image: postgres:16-alpine
-    container_name: jobrunner-postgres
+    container_name: jr-postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-dagster}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dagster}
@@ -14,17 +27,40 @@ services:
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dagster"]
+      test: ["CMD-SHELL", "pg_isready -U dagster -d dagster"]
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - jr-network
+
+  # User Code Server (gRPC)
+  usercode:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.usercode
+      args:
+        DAGSTER_VERSION: *dagster-version
+    container_name: jr-usercode
+    image: jr-usercode
+    restart: always
+    environment:
+      DAGSTER_CURRENT_IMAGE: jr-usercode
+      DAGSTER_PG_CONN_STRING: postgresql://${POSTGRES_USER:-dagster}:${POSTGRES_PASSWORD:-dagster}@postgres:5432/${POSTGRES_DB:-dagster}
+    networks:
+      - jr-network
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   # Dagster Webserver (UI)
   dagster-webserver:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
-    container_name: jobrunner-webserver
+      context: .
+      dockerfile: Dockerfile.dagster
+      args:
+        DAGSTER_VERSION: *dagster-version
+    container_name: jr-webserver
     entrypoint:
       - dagster-webserver
       - -h
@@ -37,34 +73,45 @@ services:
       - "3000:3000"
     environment:
       DAGSTER_PG_CONN_STRING: postgresql://${POSTGRES_USER:-dagster}:${POSTGRES_PASSWORD:-dagster}@postgres:5432/${POSTGRES_DB:-dagster}
-      DAGSTER_CURRENT_IMAGE: jobrunner-dagster
     volumes:
-      - ../src:/app/src
-      - ../dagster.yaml:/app/dagster.yaml
-      - ./workspace.yaml:/app/workspace.yaml
+      - ./dagster.yaml:/opt/dagster/dagster_home/dagster.yaml:ro
+      - ./workspace.yaml:/opt/dagster/dagster_home/workspace.yaml:ro
+    networks:
+      - jr-network
     depends_on:
       postgres:
         condition: service_healthy
+      usercode:
+        condition: service_healthy
 
-  # Dagster Daemon (스케줄러, 센서 실행)
+  # Dagster Daemon (스케줄러, 센서)
   dagster-daemon:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
-    container_name: jobrunner-daemon
+      context: .
+      dockerfile: Dockerfile.dagster
+      args:
+        DAGSTER_VERSION: *dagster-version
+    container_name: jr-daemon
     entrypoint:
       - dagster-daemon
       - run
+    restart: on-failure
     environment:
       DAGSTER_PG_CONN_STRING: postgresql://${POSTGRES_USER:-dagster}:${POSTGRES_PASSWORD:-dagster}@postgres:5432/${POSTGRES_DB:-dagster}
-      DAGSTER_CURRENT_IMAGE: jobrunner-dagster
     volumes:
-      - ../src:/app/src
-      - ../dagster.yaml:/app/dagster.yaml
-      - ./workspace.yaml:/app/workspace.yaml
+      - ./dagster.yaml:/opt/dagster/dagster_home/dagster.yaml:ro
+      - ./workspace.yaml:/opt/dagster/dagster_home/workspace.yaml:ro
+    networks:
+      - jr-network
     depends_on:
       postgres:
+        condition: service_healthy
+      usercode:
         condition: service_healthy
 
 volumes:
   postgres_data:
+
+networks:
+  jr-network:
+    driver: bridge

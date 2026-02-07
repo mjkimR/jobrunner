@@ -1,0 +1,43 @@
+# =============================================================================
+# User Code Image (code server)
+# =============================================================================
+# 이 이미지는 사용자 코드와 모든 의존성을 포함합니다.
+# dagster code-server로 gRPC 서버를 실행합니다.
+#
+# 버전 동기화:
+# - DAGSTER_VERSION은 Dockerfile.dagster와 동일하게 유지해야 합니다.
+# - pyproject.toml의 dagster 버전도 일치시켜야 합니다.
+# =============================================================================
+
+ARG DAGSTER_VERSION=1.9.14
+
+FROM python:3.12-slim
+
+ARG DAGSTER_VERSION
+
+WORKDIR /opt/dagster/app
+
+# Install uv for fast dependency management
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# Copy project files
+COPY pyproject.toml uv.lock ./
+COPY src ./src
+
+# Sync all dependencies (includes dagster from pyproject.toml)
+RUN uv sync --frozen --no-dev
+
+# Set environment
+ENV PYTHONPATH=/opt/dagster/app/src
+ENV UV_PROJECT_ENVIRONMENT=/opt/dagster/app/.venv
+ENV PATH="/opt/dagster/app/.venv/bin:$PATH"
+
+# Expose gRPC port for code server
+EXPOSE 4000
+
+# Health check for code server
+HEALTHCHECK --timeout=3s --start-period=5s --interval=5s --retries=10 \
+    CMD ["dagster", "api", "grpc-health-check", "-p", "4000"]
+
+# Run code server
+CMD ["dagster", "code-server", "start", "-h", "0.0.0.0", "-p", "4000", "-m", "definitions"]

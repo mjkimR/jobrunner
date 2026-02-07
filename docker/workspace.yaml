@@ -1,5 +1,8 @@
-# Dagster workspace configuration
+# Dagster Workspace Configuration
+# gRPC code server 위치를 지정합니다.
+
 load_from:
-  - python_file:
-      relative_path: src/definitions.py
-      working_directory: /app
+  - grpc_server:
+      host: usercode
+      port: 4000
+      location_name: "jobrunner"
