@@ -9,6 +9,7 @@ dependencies = [
     "app-base[ai,redis,s3]",
     "asyncpg>=0.31.0",
     "cachetools>=7.0.0",
+    "croniter>=6.0.0",
     "dotenv>=0.9.9",
     "fastapi>=0.128.2",
     "httpx>=0.28.1",
@@ -25,4 +26,7 @@ app-tools = { git = "https://github.com/mjkimR/app-common.git", subdirectory = "
 [dependency-groups]
 dev = [
     "app-tools",
+    "pytest>=9.0.2",
+    "pytest-asyncio>=1.3.0",
+    "ruff>=0.15.0",
 ]
