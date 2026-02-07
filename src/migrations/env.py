@@ -1,12 +1,10 @@
 import asyncio
 from logging.config import fileConfig
 
-from sqlalchemy import pool
-
 from alembic import context
-from sqlalchemy.ext.asyncio import async_engine_from_config
-
 from app_base.base.models.mixin import Base
+from sqlalchemy import pool
+from sqlalchemy.ext.asyncio import async_engine_from_config
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -23,8 +21,7 @@ if config.config_file_name is not None:
 # target_metadata = mymodel.Base.metadata
 
 target_metadata = Base.metadata
-from app.main import create_app
-
+from app.main import create_app  # noqa: E402, F401
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -66,6 +63,8 @@ def run_migrations_offline() -> None:
 # https://alembic.sqlalchemy.org/en/latest/cookbook.html#using-asyncio-with-alembic
 def do_run_migrations(connection):
     def process_revision_directives(context, revision, directives):
+        if config.cmd_opts is None:
+            return
         if config.cmd_opts.autogenerate:
             script = directives[0]
             if script.upgrade_ops.is_empty():
@@ -89,6 +88,8 @@ async def run_async_migrations():
     """
 
     configuration = config.get_section(config.config_ini_section)
+    if configuration is None:
+        raise ValueError("Configuration section not found")
     configuration["sqlalchemy.url"] = get_url()
 
     connectable = async_engine_from_config(

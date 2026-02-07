@@ -33,6 +33,4 @@ class Rule(Base, UUIDMixin, TimestampMixin):
         passive_deletes=True,
     )
 
-    __table_args__ = (
-        Index("ix_rules_is_active_next_run_at", is_active, next_run_at),
-    )
+    __table_args__ = (Index("ix_rules_is_active_next_run_at", is_active, next_run_at),)

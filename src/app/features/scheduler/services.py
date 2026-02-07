@@ -1,7 +1,6 @@
+import uuid
 from dataclasses import dataclass
 from datetime import datetime
-
-import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,6 +11,7 @@ from app.features.rule_executions.schemas import (
     RuleExecutionUpdate,
 )
 from app.features.rules.repos import RuleRepository
+from app.features.rules.schemas import RuleUpdate
 
 
 @dataclass
@@ -55,3 +55,9 @@ class SchedulerService:
             log_summary=log_summary,
         )
         return await repo.update(id=execution_id, obj_in=obj_in)
+
+    async def update_next_run_at(self, rule_id: uuid.UUID, next_run_at: datetime):
+        """Update the next_run_at field for a rule after execution."""
+        repo = RuleRepository(self.session)
+        obj_in = RuleUpdate(next_run_at=next_run_at)
+        return await repo.update(id=rule_id, obj_in=obj_in)

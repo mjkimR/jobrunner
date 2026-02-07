@@ -28,7 +28,8 @@ class RuleExecution(Base, UUIDMixin, TimestampMixin):
 
     status: Mapped[RuleExecutionStatus] = mapped_column(Text, nullable=False)
     executed_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False,
+        DateTime(timezone=True),
+        nullable=False,
     )
 
     log_summary: Mapped[str | None] = mapped_column(Text, nullable=True)
