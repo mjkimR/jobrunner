@@ -2,306 +2,361 @@
 
 ## 1. 프로젝트 개요 (Vision)
 
-- **프로젝트 명:** JobRunner
-- **목표:** 반복적인 개인 업무를 자동화하고, 궁극적으로 LLM 기반의 지능형 워크플로우 생성 및 실행이 가능한 **개인 자동화 플랫폼**을 구축한다.
-- **핵심 컨셉:**
-    - **(Phase 1) 룰 기반 자동화:** 사용자가 정의한 '룰(Rule)'을 스케줄에 따라 실행하고, 결과를 통지하는 실행 환경(Runtime)을 제공한다.
-    - **(Phase 2) 태스크/이벤트 시스템:** 일회성 작업, 사람의 개입(승인/리뷰), 외부 시스템 연동 등을 포괄하는 이벤트 기반 태스크 관리 시스템을 구축한다.
-    - **(Phase 3) 지능형 자동화:** LLM이 사용자의 자연어 요청을 해석하여 워크플로우를 동적으로 생성하고, 외부 AI 에이전트와 협업하는 시스템으로 발전시킨다.
-- **예시 시나리오:**
-    - (Phase 1) 매일 아침 특정 주제의 기사를 검색, LLM으로 요약하여 텔레그램으로 전송
-    - (Phase 1) 특정 주식의 가격이 지정된 조건을 만족하면 알림 발송
-    - (Phase 2) 승인 대기 목록에서 사용자가 텔레그램으로 '승인' 버튼을 누르면 후속 작업 실행
-    - (Phase 3) "지난주 AI 관련 뉴스 요약해서 보고서 만들어줘"라는 요청을 LLM이 워크플로우로 변환 후 실행
+* **프로젝트 명:** JobRunner
+* **목표:** **"Host Agent와 Local Gateway가 협력하고, Workflow Engine이 실행한다."**
+* 반복적인 개인 업무를 자동화하는 것을 넘어, **LLM의 생성 능력**과 **워크플로우 엔진의 안정성**을 결합한 **Human-in-the-Loop 자동화 플랫폼**을 로컬 환경에 구축한다.
 
-- **프로젝트 시작 동기:**
 
-    > [!NOTE]
-    > 왜 오픈소스 에이전트 프레임워크 + LLM API 조합으로 시작하지 않고, 굳이 정형화된 플랫폼을 직접 구축하는가?
+* **핵심 컨셉:**
+  * **(Phase 1) Local & CLI First:** 모든 인프라는 로컬 Docker에서 구동된다. Host Agent(Gemini CLI, Claude Code 등)를 통해 자연어로 작업을 지시하고, 생성된 코드를 검토 후 실행한다.
+  * **(Phase 2) Dynamic Dagster:** 정적 파일 수정 없이도 LLM이 생성한 파이썬 코드를 즉시 Dagster 자산(Asset)으로 로드하고 실행하는 동적 파이프라인을 구축한다.
+  * **(Phase 3) Agent & Task Management:** Local Agent Gateway를 통해 Human Interface를 이원화하고, Task Manager와 Agent Manager로 복잡한 작업의 분해/병렬처리/병합을 지원한다.
+  * **(Phase 4) Cloud Extension:** (Optional) 로컬 자원이 부족하거나 24시간 가동이 필수적인 경우에만 선별적으로 클라우드로 확장한다.
 
-    | 관점 | 직접 구축의 이점 |
-    |------|-----------------|
-    | **비용 효율성** | CLI 기반 Human-in-the-Loop 방식으로 LLM API 호출 최소화. Gemini CLI 무료 사용량 적극 활용. |
-    | **보안 및 통제력** | 내가 허락하지 않은 작업의 폭주 억제. 직접 만들었기에 한계를 알고, 블랙박스 실행보다 안심. |
-    | **안정적 재사용** | 한 번 코드화한 작업은 LLM 비결정성 없이 안정적으로 반복 실행 가능. |
-    | **커스터마이징** | 내가 만든 도구이므로 원하는 대로 확장 및 수정 가능. |
-    | **세밀한 트리거링** | API 자동 호출이 아닌, 원하는 시점에 원하는 모델로 CLI를 통해 명시적 트리거 가능. |
 
-    이 동기는 프로젝트 전반의 아키텍처 결정(Human-in-the-Loop, CLI 중심 워크플로우, 단계적 승인 등)에 일관되게 반영된다.
+* **프로젝트 시작 동기:**
+> [!NOTE]
+> 왜 오픈소스 에이전트 프레임워크 + LLM API 조합으로 시작하지 않고, 굳이 정형화된 플랫폼을 직접 구축하는가?
 
----
 
-## 2. 용어 정의 (Glossary)
+| 관점 | 직접 구축의 이점 |
+| --- | --- |
+| **비용 효율성** | Human-in-the-Loop 방식으로 LLM API 호출 최소화. Host Agent 사용량 + Local LLM 적극 활용. |
+| **보안 및 통제력** | 내가 허락하지 않은 작업의 폭주 억제. 직접 만들었기에 한계를 알고, 블랙박스 실행보다 안심. |
+| **안정적 재사용** | 한 번 코드화한 작업은 LLM 비결정성 없이 안정적으로 반복 실행 가능. |
+| **커스터마이징** | 내가 만든 도구이므로 원하는 대로 확장 및 수정 가능. |
+| **세밀한 트리거링** | API 자동 호출이 아닌, 원하는 시점에 Host Agent를 통해 명시적 트리거 가능. |
+| **상시 가용성** | Local LLM 기반 Gateway로 Host Agent 없이도 간단한 상호작용 가능. |
+| **인터페이스 다양성** | CLI(Host Agent)와 채팅 UI(Gateway) 중 상황에 맞는 인터페이스 선택. |
 
-본 문서에서 사용하는 주요 용어를 명확히 정의한다.
 
-| 용어 | 정의 | 비고 |
-|---|---|---|
-| **룰 (Rule)** | 조건, 액션, 실행 주기가 정의된 자동화 작업의 최소 단위. Phase 1의 핵심 개념. | DB에 저장 |
-| **룰 스크립트 (Rule Script)** | 룰 실행 시 구동되는 Python 스크립트. | GitHub에서 관리 |
-| **태스크 (Task)** | 실행 가능한 작업의 일반화된 단위. 룰, 일회성 작업, 승인 요청 등을 포괄. | Phase 2 이후 |
-| **워크플로우 (Workflow)** | 여러 태스크가 순서/조건에 따라 연결된 실행 흐름. | Phase 2 이후 |
-| **이벤트 (Event)** | 시스템 내외부에서 발생하는 트리거. 워크플로우 시작 조건이 됨. | Phase 2 이후 |
-| **Artifact** | 룰/워크플로우 실행 결과로 생성되는 파일(보고서, 데이터 등). | Storage에 저장 |
+이 동기는 프로젝트 전반의 아키텍처 결정(Human-in-the-Loop, 단계적 승인 등)에 일관되게 반영된다.
 
 ---
 
-## 3. 프로젝트 범위 (Scope)
+## 2. 핵심 개념 정의 (Key Concepts)
 
-### Phase 1: 룰 기반 자동화 (PoC)
+> [!TIP]
+> 상세한 모듈 구성은 [MODULES.md](./MODULES.md) 참조.
+
+### 2.1. Human Interface Layer
+
+사용자와 시스템 간의 두 가지 진입점을 제공한다.
+
+| 인터페이스 | 기반 | 특징 | 적합한 작업 |
+|-----------|------|------|------------|
+| **Host Agent** | Cloud LLM | Skill/MCP 풀 활용, IDE/CLI 기반 | 복잡한 판단, 코드 생성, 시스템 관리 |
+| **Local Agent Gateway** | Local LLM | 채팅 인터페이스, 상시 가동 | 간단한 상호작용, 빠른 응답, 상태 조회 |
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         Human (사용자)                                   │
+└─────────────────────────────────────────────────────────────────────────┘
+          ↓                                           ↓
+┌─────────────────────────────┐        ┌─────────────────────────────────┐
+│ Host Agent                  │        │ Local Agent Gateway             │
+│ (Gemini CLI, Claude Code)   │        │ (채팅 인터페이스)                │
+│ - 고급 작업, 복잡한 판단    │        │ - 간단한 상호작용, 라우팅       │
+└─────────────────────────────┘        └─────────────────────────────────┘
+```
+
+### 2.2. 시스템 모듈 구성
+
+| 모듈 | 역할 |
+| --- | --- |
+| **1. Host Agent Tools** | Host Agent가 시스템을 제어하기 위한 도구 (SKILL.md, jr CLI, MCP) |
+| **2. Workflow Engine** | 주기적/정형화된 작업 실행, Job-Agent 협업 (Dagster) |
+| **3. Task Manager** | 할일 관리, Host Agent의 영구 메모리 |
+| **4. Agent Manager** | Worker LLM Agent 생명주기 관리 (Local/Cloud LLM Agent) |
+| **5. Local Agent Gateway** | 채팅 인터페이스, 작업 라우팅, 간단한 자율 판단 |
+
+### 2.3. 유즈케이스별 처리 흐름
+
+| 작업 유형 | 처리 주체 | 흐름 |
+| --- | --- | --- |
+| **주기적/정형 작업** | Host Agent → Dagster | Host Agent가 1회 등록, Dagster가 지속 실행. |
+| **간단한 상호작용** | Local Agent Gateway | 채팅으로 상태 조회, 간단한 명령 실행. |
+| **간단한 기존 작업** | Gateway → Agent Manager | Gateway가 라우팅, Local LLM Agent가 처리. |
+| **복잡/비긴급 작업** | Task Manager | Task 등록 후 Host Agent 판단 유보. |
+| **복잡/긴급 작업** | Cloud LLM Agent | 제한적 사용 (비용 발생). |
+
+### 2.4. Job vs Task
+
+| 용어 | 정의 | 예시 |
+| --- | --- | --- |
+| **Job** | Dagster에서 실행되는 코드화된 작업 단위 | `daily_stock_alert.py` |
+| **Task** | 사용자 또는 에이전트가 수행해야 할 TODO 항목 | "A지역 여행 플랜 작성" |
+
+* **Job**은 이미 코드로 정의되어 Dagster가 스케줄/트리거하는 안정적인 실행 단위.
+* **Task**는 아직 해결되지 않은 작업 항목으로, 에이전트가 가져가 처리하거나 사람이 직접 처리할 수 있음.
+
+### 2.5. Agent, Skill, MCP
+
+| 용어 | 정의 |
+| --- | --- |
+| **Agent** | 특정 역할을 수행하는 LLM 기반 실행 주체 |
+| **Skill** | SKILL.md 파일 + 스크립트로 정의된 능력. 프롬프트/지시사항 기반으로 Agent의 행동 패턴 확장 |
+| **MCP** | Model Context Protocol. 외부 도구/서비스 연동 인터페이스 |
+| **Role → Capability Mapping** | 역할에 따라 어떤 Skill과 MCP를 Agent에게 주입할지 정의 |
+
+* Skill: 지시사항/스크립트 기반 (예: jr CLI 사용법, 코드 리뷰 가이드)
+* MCP: 외부 도구 연동 (예: Dagster MCP, GitHub MCP, 파일시스템 MCP)
+* 복잡한 flow는 LangGraph로 Agent App 생성 후 A2A 인터페이싱으로 리소스화 가능.
+
+### 2.6. Dagster MCP 활용 가능성
 
 > [!NOTE]
-> Phase 1은 MVP(Minimum Viable Product)로, 핵심 아이디어 검증에 집중한다.
+> Dagster 생태계에서 제공하는 MCP Server 활용을 검토 중.
+> Host Agent가 Dagster Asset/Job을 직접 쿼리하고 트리거할 수 있는 가능성 있음.
+> (상세 스펙 추후 확인)
+
+---
+
+## 3. Phase 1 범위 (Scope) - Local Intelligence
 
 **In-Scope:**
-- **룰(Rule) 관리:** 룰 생성, 조회, 수정, 삭제 (CRUD). 데이터베이스(Supabase)에 저장.
-- **룰 스크립트 관리:** 사용자가 룰에 매칭되는 실행 스크립트를 직접 개발하여 GitHub 리포지토리에 저장/관리. 실행 환경에서는 호스트 머신의 Git 리포지토리 디렉토리를 Docker 컨테이너에 볼륨 마운트하여 사용.
-- **룰 실행 환경:** FastAPI 기반 백엔드 서버, Docker 컨테이너화, 스케줄 기반 실행 (`next_run_at` polling).
-- **알림:** 룰 실행 결과 및 조건 충족 시 텔레그램으로 알림 전송.
-- **PoC 기능:** `yfinance`를 이용한 미국 주식 가격 모니터링 및 조건 알림.
+
+* **로컬 런타임 환경:** 사용자 PC(Local)에서 `Docker Compose`로 Dagster, PostgreSQL, Redis를 구동.
+* **Host Agent 연동:** Gemini CLI, Claude Code 등 Skill/MCP 지원 Agent Client가 시스템을 제어.
+* **JobRunner CLI (`jr`):** Host Agent가 사용하는 도구. Dagster 코드 생성/수정/실행 인터페이스 제공.
+  * jr 사용법은 SKILL.md로 Host Agent에 주입됨.
+* **LLM 기반 코드 생성 (Code-as-Data):** 자연어 요청을 Dagster Asset/Op 파이썬 코드로 변환.
+* **인간 검토 프로세스 (Review & Approve):** 생성된 코드를 실행하기 전 승인.
+* **Dagster 연동:** Dagster MCP 또는 jr CLI를 통해 제어.
 
 **Out-of-Scope (Phase 1):**
-- 전용 프론트엔드 UI (API와 텔레그램을 통해 상호작용)
-- 실시간성 보장 (분/시간 단위 배치 기본)
-- 복잡한 워크플로우 (단일 룰 실행만 지원)
+
+* 클라우드 인프라 (GCP, AWS 등).
+* Local Agent Gateway (Phase 3).
+* Task Manager (Phase 3).
+* Agent Manager (Phase 3).
+* 24시간 무중단 서버 운영.
 
 ---
 
-### Phase 2: 태스크/이벤트 관리 시스템 (중기 목표)
+## 4. Phase 2 범위 - Dynamic Dagster
 
 **In-Scope:**
-- **태스크/이벤트 모듈:** 일회성 작업, 사람의 개입(승인/리뷰), 외부 시스템 연동을 포괄하는 중앙 허브 구축.
-- **Pub/Sub 아키텍처:** 서비스 간 결합도를 낮추기 위한 이벤트 주도 아키텍처 도입 (**초기: 로컬 Docker Redis 기반 메시지 브로커 활용**).
-    - **전달/처리 보장(최소 계약):** 기본은 **at-least-once** 전달로 가정하며, 컨슈머는 `event_id`(UUID/ULID 등)를 기준으로 **멱등성(idempotency)** 을 보장해야 한다.
-    - 컨슈머는 event_id를 processed table(또는 Redis set)로 dedupe 처리
-- **워크플로우 엔진:** 복잡한 태스크 흐름, 상태 관리, 에러 처리를 위한 오케스트레이션 프레임워크 도입 (Dagster / Prefect / Temporal 검토).
-- **사용자 상호작용 고도화:** 텔레그램 봇을 통한 양방향 대화형 인터랙션 (인라인 버튼, 승인/반려 처리 등).
+
+* **동적 Asset 로딩:** LLM이 생성한 Python 코드를 파일 저장 없이 즉시 Dagster Asset으로 등록/실행.
+* **코드 버전 관리:** 생성된 코드의 히스토리 관리 및 롤백 지원.
+* **향상된 템플릿 시스템:** 다양한 유스케이스별 Dagster 코드 템플릿 확장.
 
 ---
 
-### Phase 3: 지능형 자동화 (장기 목표)
+## 5. Phase 3 범위 - Agent & Task Management
 
 **In-Scope:**
-- **LLM as Planner:** 사용자의 자연어 요청을 LLM이 해석하여 정적 워크플로우 코드를 동적으로 생성.
-- **RAG 기반 최적화:** 과거 성공 사례를 Vector DB에 저장, 유사 사례를 Few-shot example로 활용하여 워크플로우 생성 품질 향상.
-- **외부 에이전트 연동:** OpenClaw 등 전문화된 에이전트 프레임워크와의 상호 보완적 연동.
-- **CLI 기반 Human-in-the-Loop:** Gemini CLI를 활용한 비용 효율적 워크플로우 생성 및 사용자 검토/승인 프로세스.
-- **간이 대시보드 UI:** 시스템 운영 상태를 한눈에 볼 수 있는 읽기 전용 웹 대시보드 (선택 사항).
 
-## 4. 기능 요구사항 (Functional Requirements)
+### 5.1. Local Agent Gateway
 
-| ID | 기능명 | 설명 | 우선순위 |
-|---|---|---|---|
-| FR-01 | 룰 정의 | 사용자는 자동화하고 싶은 작업의 조건, 액션, 실행 주기 등을 포함한 룰을 생성할 수 있다. | Must |
-| FR-02 | 룰 스크립트 생성 지원 | 사용자가 룰 스크립트를 생성하는 과정을 보조하기 위해, 플랫폼은 LLM 기반의 '룰 생성 스킬(Skill)'과 같은 개발 도구를 제공할 수 있다. | Should |
-| FR-03 | 룰 실행 | 스케줄러가 DB에 저장된 룰 정보를 기반으로, GitHub에 저장된 해당 룰의 실행 스크립트를 가져와 실행한다. | Must |
-| FR-04 | 결과 알림 (Telegram) | 룰 실행 결과 또는 지정된 조건 충족 시, 텔레그램 봇을 통해 사용자에게 메시지를 보낸다. | Must |
-| FR-05 | 주가 데이터 조회 (PoC) | `yfinance` 라이브러리를 사용하여 특정 주식의 시세 데이터를 조회한다. | Must (for PoC) |
-| FR-06 | 주가 조건 검사 (PoC) | 'FR-05'에서 얻은 데이터가 사용자가 룰에 설정한 조건(예: $500 이상)을 만족하는지 검사한다. | Must (for PoC) |
+| 항목 | 설명 |
+|------|------|
+| **역할** | 간단한 판단/응답, 작업 라우팅, 채팅 인터페이스 |
+| **기술 스택** | Local LLM (Ollama), Chat UI (Streamlit 등) |
+| **특징** | 상시 가동, 비용 무료, 빠른 응답 |
 
-## 5. 시스템 아키텍처 (System Architecture)
+**자율 판단 범위:**
+- 가능: 상태 조회, 간단한 질문 응답, 기존 Job 즉시 실행
+- 불가 (Host Agent 필요): 새로운 Job 코드 생성, 복잡한 의사결정, 시스템 설정 변경
 
-### 5.1. 스케줄링 아키텍처
+### 5.2. Task Manager
 
-본 시스템의 룰 스케줄링은 Application 레벨에서 `next_run_at` 필드 기반 polling 방식으로 처리한다.
+* **Task Storage:** 자체 DB (Postgres)
+  * 쿼리 자유도 높음, Task-SubTask 관계/Agent 할당 이력 관리
+  * 필요시 GitHub Issues 연동 가능
+* **Task 패턴:**
+  * Task 분해 (Decomposition): 큰 작업 → SubTask 분할
+  * 병렬 할당 (Assignment): 유휴 Agent가 Task 처리
+  * 결과 병합 (Aggregation): 최종 Planner가 통합
 
-- **설계 원칙:**
-    - **인프라 독립성:** PostgreSQL 특정 확장(pg_cron 등)에 의존하지 않아, 다양한 환경에서 동작 가능.
-    - **로컬 환경 호환:** 로컬 Docker 환경에서도 외부 Webhook 수신 없이 완전히 동작.
-    - **직관적 디버깅:** `next_run_at` 컬럼 조회만으로 다음 실행 시점 확인 가능.
+### 5.3. Agent Manager
 
-- **실행 흐름:**
-    1. **(External) 주기적 트리거:** 외부 스케줄러(OS cron, Windows Task Scheduler, 또는 앱 내부 루프)가 1분마다 FastAPI의 tick 엔드포인트를 호출한다.
-    2. **(App) 실행 대상 룰 조회:** FastAPI는 `rules` 테이블에서 `WHERE next_run_at <= NOW() AND is_active = true` 조건으로 실행 대상 룰들을 조회한다.
-    3. **(App) 룰 실행:** 조회된 각 룰에 대해 실행 스크립트를 가져와 실행하고, 콜백을 처리한다.
-    4. **(App) 다음 실행 시간 계산:** 실행 완료 후, `schedule` (cron 표현식)을 파싱하여 다음 실행 시간을 계산하고, `next_run_at` 필드를 업데이트한다. (Python `croniter` 라이브러리 활용)
+| 컴포넌트 | 역할 | 사용 조건 |
+| --- | --- | --- |
+| **Local LLM Agent** | Local LLM 자원으로 경량 작업 처리 | 기본 |
+| **Cloud LLM Agent** | Cloud LLM으로 복잡/긴급 작업 처리 | Host Agent 개입 불가 + Local LLM 한계 시 |
 
-- **Tick 엔드포인트 예시:**
-    ```
-    POST /api/v1/tick
-    → 실행 대상 룰 조회 및 실행
-    → 각 룰의 next_run_at 업데이트
-    ```
+### 5.4. Agent Configuration
 
-### 5.2. 데이터베이스 스키마
+* **Agent Factory:** 역할 기반 Agent 인스턴스 생성.
+* **Skill Registry:** SKILL.md 기반 능력 카탈로그.
+* **MCP Registry:** MCP Server 목록 관리.
+* **복잡한 Flow:** LangGraph → A2A 프로토콜로 리소스화.
 
-#### Table: `rules`
-룰 자체의 정의를 저장합니다.
+---
 
-| Column | Type | Description | Example |
-| :--- | :--- | :--- | :--- |
-| `id` | `uuid` | Primary Key | `a1b2c3d4-...` |
-| `name` | `text` | 룰의 이름 | `"Apple 주가 $200 돌파 알림"` |
-| `schedule` | `text` | 실행 주기 (Cron 표현식) | `"*/5 * * * *"` (5분마다) |
-| `is_active` | `boolean` | 룰 활성화 여부 | `true` |
-| `payload` | `jsonb` | 실행 스크립트에 전달될 데이터 | `{ "ticker": "AAPL", "target": 200 }` |
-| `execution_script_path`| `text` | 실행할 메인 스크립트 경로 (마운트된 볼륨 내 상대경로) | `"scripts/stock/check_price.py"` |
-| `on_success` | `jsonb` | 성공 시 실행할 콜백 설정. PoC 진행하며 구조 확정 예정. | `{"type": "telegram", "config": {...}}` |
-| `on_failure` | `jsonb` | 실패 시 실행할 콜백 설정. PoC 진행하며 구조 확정 예정. | `{"type": "log", "config": {...}}` |
-| `next_run_at` | `timestampz`| 다음 실행 예정 시간. 스케줄러가 이 시간을 기준으로 실행 대상을 조회. **Not Null**. | `2024-10-26 10:05:00Z` |
-| `created_at` | `timestampz` | 생성 시각 | `2024-10-26 10:00:00Z` |
+## 6. Phase 4 범위 - Cloud Extension
 
-#### Table: `rule_executions`
-각 룰의 실행 이력과 결과물 위치를 저장합니다.
+* **Hybrid 전환:** `dagster-daemon` 컨테이너를 라즈베리파이 또는 VPS로 이동.
+* **Cloud Native:** 팀 단위 협업/대규모 처리 시 K8s 확장 (현재 고려 대상 아님).
 
-| Column | Type | Description |
-| :--- | :--- | :--- |
-| `id` | `uuid` | 실행 기록의 Primary Key |
-| `rule_id` | `uuid` | 실행된 룰의 ID (FK to `rules.id`) |
-| `status` | `text` | 실행 결과 (`running`, `success`, `failure`) |
-| `executed_at` | `timestampz` | 실행 시작 시각 |
-| `log_summary` | `text` | "5개 기사 요약 완료" 등 간단한 실행 로그 |
-| `artifact_path` | `text` | **Supabase Storage에 저장된 결과물 파일의 경로** |
+---
 
-### 5.3. 결과물 저장소 (Artifact Storage)
-
-- **기술:** **Supabase Storage**를 사용하여 룰 실행 결과물(파일, 보고서 등)을 저장한다.
-- **장점:**
-    - **통합 환경:** DB, 인증, 스토리지를 Supabase 플랫폼 내에서 모두 해결
-    - **통합 보안:** DB의 RLS(Row Level Security)와 연계하여 파일 접근 권한을 세밀하게 제어 가능
-    - **개발 단순성:** 단일 SDK 사용
-
-## 6. 비기능 요구사항 (Non-Functional Requirements)
-
-| ID | 구분 | 설명 |
-|---|---|---|
-| NFR-01 | 기술 스택 | - **Backend:** FastAPI (Python) <br> - **Database:** Supabase (PostgreSQL) <br> - **Scheduler (Phase 1):** Application-level polling (`next_run_at` 기반) <br> - **Message Broker (Phase 2):** Redis (local Docker) + FastStream (권장: Redis Streams + Consumer Group) <br> - **Cron Parsing:** `croniter` (Python) <br> - **Storage:** Supabase Storage <br> - **Rule Generation:** High-performance LLM (e.g., Gemini) <br> - **Rule Execution:** Cost-efficient or Local LLM <br> - **Data Source (PoC):** `yfinance` |
-| NFR-02 | 인프라 | - 모든 애플리케이션은 **Docker 컨테이너**로 패키징 및 실행되어야 한다. <br> - DB는 호스팅된 Supabase를 사용하고, 백엔드 Docker 컨테이너는 로컬 머신에서 실행하는 것을 가정한다. <br> - **(Phase 2)** 이벤트 기반 태스크/이벤트 모듈을 위해 로컬 Docker로 Redis 브로커를 함께 구동한다. |
-| NFR-03 | 소스코드 관리 | - **룰 (데이터):** Supabase DB에 저장 <br> - **룰 실행 스크립트 (코드):** 사용자가 관리하는 GitHub 리포지토리에 저장 및 버전 관리 |
-| NFR-04 | 확장성 | 룰의 종류나 데이터 소스가 추가되더라도 유연하게 확장할 수 있는 구조를 지향한다. (Skill 화) |
-| NFR-05 | 환경 분리 | - **룰 개발 환경:** 사용자가 룰 스크립트를 개발하는 환경. 플랫폼은 이 과정을 지원하기 위한 보조 도구(e.g. LLM Skill)를 제공. <br> - **룰 실행 환경:** FastAPI/Docker 기반으로, 원격 DB 및 Git 리포지토리의 룰과 스크립트를 가져와 실행하는 런타임. |
-
-### 6.1. 데이터 보존 및 삭제 (Data Retention and Deletion)
-
-- **Supabase Storage (결과물 파일):**
-    - Supabase Storage는 자동 객체 수명 주기 관리(automatic object lifecycle management) 기능을 기본으로 제공하지 않는다.
-    - 일정 기간이 지난 결과물 파일의 자동 삭제를 위해서는 별도의 스크립트(예: Supabase Edge Function 또는 FastAPI 백엔드에서 주기적으로 실행되는 스크립트)를 구현하여 Supabase Storage API의 `remove` 메서드를 호출해야 한다.
-    - `storage.objects` 테이블에 적절한 RLS(Row Level Security) 정책이 설정되어 있어야 한다.
-- **Supabase PostgreSQL (DB 레코드):**
-    - 특정 기간(예: 30일)이 지난 `rule_executions` 테이블의 레코드와 같이 오래된 데이터를 주기적으로 삭제한다.
-    - FastAPI 백엔드에서 주기적으로 실행되는 정리 태스크(예: 매일 1회 tick 시 오래된 레코드 삭제)를 통해 처리한다.
-    - 또는 Supabase Edge Function을 활용하여 서버리스 방식으로 처리할 수도 있다.
-
-## 7. 가정 및 제약사항 (Assumptions and Constraints)
-
-- **`yfinance`의 한계 인지:** `yfinance`는 비공식 스크래핑 기반으로, 불안정하거나 IP가 차단될 수 있음을 인지한다. PoC 단계에서는 이를 감수하고 사용하되, 향후 안정적인 API(예: Alpha Vantage)로 전환을 고려한다.
-- **로컬 실행 환경:** 초기 운영은 사용자가 개인 로컬 머신에서 Docker 컨테이너를 직접 실행하는 것을 가정한다. (예: 출근 후 Docker 실행)
-- **GitHub 관리:** 룰 실행 스크립트가 저장될 GitHub 리포지토리는 사용자가 직접 생성하고 관리한다.
-
-## 8. 향후 발전 방향 (Future Roadmap)
-
-본 프로젝트의 핵심 기능이 안정화된 이후, 다음과 같은 기능 확장을 통해 고도화된 개인 자동화 플랫폼으로 발전시키는 것을 목표로 한다.
-
-### 8.1. 태스크/이벤트 관리 시스템 구축
-
-- **모듈 비전:** 정기적인 룰 실행을 넘어, 일회성 작업, 사람의 개입(승인/리뷰), 외부 AI 에이전트 연동 등을 포괄하는 시스템의 중앙 허브 역할을 수행하는 '태스크/이벤트 관리 모듈'을 구축한다.
-- **서비스 간 통신 아키텍처:** 서비스 간 결합도를 낮추고 유연한 확장을 위해 **이벤트 주도 아키텍처**를 채택한다. 각 서비스(프로듀서)는 단순히 이벤트를 발행하고, 다른 서비스(컨슈머)는 이벤트를 구독하여 독립적으로 처리한다.
-    - **Phase 2 초기:** 로컬 Docker 환경에서 **Redis를 메시지 브로커**로 사용하여 이벤트 Pub/Sub를 구현한다.
-        - 권장: **Redis Streams + Consumer Group** 기반으로 백로그/재처리/수평 확장(여러 컨슈머)을 가능하게 설계한다.
-        - **전달/처리 보장(최소 계약):** 기본은 **at-least-once** 전달로 가정하며, 컨슈머는 `event_id`를 기준으로 **멱등성(idempotency)** 을 보장해야 한다.
-        - 구현 예: FastStream 기반 Producer/Consumer
-    - **필요 시 확장:** 처리량/요구사항 증가 시 Kafka/RabbitMQ 등 전용 메시지 브로커를 검토한다.
-    - **비고:** DB 테이블 폴링 기반 이벤트 큐 구현은 운영/구현 복잡도가 높아 초기 범위에서 제외한다.
-
-### 8.2. LLM 기반 동적 워크플로우 생성 (LLM as Planner)
-
-- **핵심 전략:** 사용자의 자연어 기반 일회성 작업 요청을 LLM이 해석하여, 이를 수행하기 위한 **정적 워크플로우(예: Dagster 실행 코드)를 동적으로 생성**하는 'LLM as Planner' 모델을 채택한다. 이 방식은 LLM의 유연성과 워크플로우 엔진의 안정성을 결합하여 비용, 속도, 신뢰성 측면의 이점을 극대화한다.
-- **검색 증강 생성(RAG) 최적화:**
-    1.  성공적으로 실행된 모든 워크플로우의 코드와 메타데이터를 Vector DB에 저장한다.
-    2.  새로운 요청이 오면, Vector DB에서 의미적으로 가장 유사한 과거 성공 사례를 검색한다.
-    3.  LLM에게 이 유사 사례를 컨텍스트(Few-shot example)로 함께 제공하여, 더 정확하고 일관성 있는 워크플로우 코드를 생성하도록 유도한다.
-- **동적 코드 실행 방안:** LLM이 생성한 코드는 **'범용 실행기(Generic Executor)' 태스크** 패턴을 통해 실행한다. 미리 정의된 `execute_python_code(code_string: str)`와 같은 태스크에 LLM이 생성한 코드 문자열을 인자로 전달하여 실행함으로써, 엔진 재시작 없이 동적 코드를 안정적으로 처리한다.
-
-### 8.3. 워크플로우 엔진 고도화 및 역할 정의
-
-- **오케스트레이션 프레임워크 도입:** 복잡한 태스크 흐름, 상태 관리, 에러 처리를 위해 오픈소스 워크플로우 엔진을 적극 도입한다.
-- **주요 검토 항목:**
-    - **워크플로우 레벨 재시도:** `Task A -> B -> 검증` 실패 시, `Task A`부터 다시 시작하는 순환(Cyclic) 흐름 지원 여부.
-    - **상태 기반 제어:** 장시간 대기(예: 사람의 승인) 또는 복잡한 조건부 분기 처리 능력.
-- **워크플로우 엔진 도입 전략:**
-    - **Phase 2 초기:** 단순한 상태 기반 태스크 관리로 시작. `status: pending → running → success/failure` 패턴과 앱 레벨 재시도 로직.
-    - **복잡도 증가 시:** **Prefect** 우선 검토. Python 데코레이터 기반으로 기존 코드 마이그레이션 용이, self-hosted 단일 컨테이너 구성 가능.
-    - **Dagster:** 데이터 자산 중심 파이프라인에 적합. Prefect와 비교 후 선택.
-- **LangGraph vs Prefect 비교 (의사결정 참고):**
-
-    | 관점 | **LangGraph** | **Prefect** |
-    |------|--------------|-------------|
-    | 핵심 포커스 | LLM Agent 추론 루프, 상태 기계 | 데이터 파이프라인, 태스크 오케스트레이션 |
-    | 그래프 실행 | ✅ StateGraph, conditional edges | ✅ DAG, 의존성 기반 |
-    | Fan-in/Fan-out | ✅ 지원 | ✅ 지원 |
-    | 스케줄링 | ❌ 외부 트리거 필요 | ✅ 내장 스케줄러 |
-    | 재시도/에러 핸들링 | 앱에서 구현 필요 | ✅ 태스크 레벨 자동 재시도 |
-    | 분산 실행 | ❌ 단일 프로세스 | ✅ 워커 분산 |
-    | 모니터링 UI | LangSmith (유료) | ✅ Prefect UI (self-hosted 무료) |
-    | LLM 에이전트 통합 | ✅ **최적화** | 가능하지만 범용적 |
-
-    - **LangGraph 단독 사용 가능 시나리오:** Phase 3의 LLM 중심 워크플로우가 주요 사용 사례이고, 비-LLM 데이터 파이프라인이 적은 경우. 스택 단순화 이점.
-    - **Prefect 도입 필요 시나리오:** 분산 워커 실행, 복잡한 스케줄링/재시도, ETL 파이프라인이 많은 경우.
-    - **결정 시점:** Phase 2 중기, 실제 워크플로우 복잡도 확인 후 선택. 현재는 앱 레벨 상태 관리로 시작.
-
-- **역할 분담 (Prefect 도입 시):**
-    - **워크플로우 엔진 (Macro-orchestration):** 전체 비즈니스 프로세스(예: `데이터 수집 -> 분석 에이전트 호출 -> 알림`)를 관리하는 **'총감독'**.
-    - **LangGraph (Micro-orchestration):** 단일 `분석 에이전트` **내부**의 복잡한 상태 기반 로직(예: `생각 -> 도구 사용 -> 관찰` 루프)을 관리하는 **'전문가의 작업 절차'**.
-
-## 9. 추가 고려사항 (Additional Considerations)
-
-본 프로젝트의 안정적인 운영과 장기적인 확장을 위해, 다음과 같은 아키텍처 및 구현상의 고려사항들을 검토한다.
-
-### 9.1. 보안 (Security)
-
-LLM이 생성한 코드를 동적으로 실행하는 기능은 강력하지만, 잠재적인 보안 위협을 내포하므로 이에 대한 철저한 대비가 필수적이다.
-
--   **실행 환경 샌드박싱 (Sandboxing):** LLM이 생성한 코드를 실행하는 '범용 실행기'는 반드시 외부 네트워크 및 파일 시스템 접근이 엄격히 제한된 샌드박스 환경(예: Docker 컨테이너, gVisor)에서 동작하도록 설계한다.
--   **인증 및 인가 (Authentication & Authorization):** 워크플로우 트리거, 승인 처리 등 시스템의 주요 기능에 접근하는 모든 API 엔드포인트는 강력한 인증(AuthN) 및 인가(AuthZ) 절차를 거치도록 한다. (예: OAuth2/OIDC 표준, Supabase Auth 활용)
--   **비밀 정보 관리 (Secret Management):** API 키, DB 비밀번호 등 민감한 정보는 LLM 생성 코드에 직접 노출되지 않도록 하며, 전용 비밀 정보 관리 시스템(예: HashiCorp Vault, 클라우드 Secret Manager)을 통해 안전하게 주입/관리한다.
-
-### 9.2. 사용자 상호작용 (User Interaction)
-
-개발자 중심의 인터페이스를 넘어, 사용자 친화적인 상호작용 채널을 제공하여 시스템의 활용도를 높인다.
-
--   **챗봇 기반 인터페이스 고도화:** 텔레그램 봇을 활용하여 단순 알림을 넘어, 워크플로우 트리거, 승인/반려 처리, 상태 조회 등 양방향 대화형 인터랙션을 제공한다. (예: 인라인 버튼, 폼 활용)
--   **간이 대시보드 UI (선택 사항):** 시스템의 전체적인 운영 상태(실행 중인 워크플로우, 승인 대기 목록, 최근 결과 등)를 한눈에 볼 수 있는 읽기 전용 웹 대시보드 UI 구축을 중장기적으로 검토한다.
-
-### 9.3. 테스트 전략 (Testing Strategy)
-
-LLM의 비결정성(non-determinism)과 동적 코드 생성 기능을 고려한 다층적인 테스트 전략을 수립한다.
-
--   **컴포넌트 단위 테스트:** LLM이 호출할 수 있는 모든 '도구(MCP)'들은 독립적으로 단위 및 통합 테스트를 수행하여 신뢰성을 확보한다.
--   **워크플로우 생성 과정 테스트:** LLM의 워크플로우 생성 능력에 대한 회귀 테스트를 위해, 대표적인 자연어 요청에 대한 '골든 스탠다드' 워크플로우 코드를 정의한다. LLM이 생성한 코드와 골든 스탠다드를 비교(예: 코드 유사도, AST 구조 분석)하여 LLM의 성능 변화를 지속적으로 모니터링한다.
--   **End-to-End (E2E) 테스트:** 몇 가지 핵심적인 정적 워크플로우에 대해 전체 시스템(이벤트 발생부터 최종 결과 알림까지)이 올바르게 동작하는지 검증하는 E2E 테스트를 구축한다.
-
-### 9.4. 외부 에이전트 프레임워크 연동 (Integration with External Agent Frameworks)
-
-OpenClaw와 같은 고도로 전문화된 에이전트 프레임워크와의 상호 보완적인 연동 전략을 수립하여 시스템의 확장성과 지능을 강화한다.
-
--   **역할 분담:**
-    -   **MyRules Engine (총괄 지휘 본부):** 전체 자동화 흐름을 지휘하는 '거시적 오케스트레이터'로서, 어떤 조건에서 어떤 에이전트나 워크플로우를 호출할지 결정한다. (예: 스케줄링, 데이터 흐름 관리)
-    -   **외부 에이전트 프레임워크 (전문가):** MyRules Engine의 워크플로우 내에서 호출되는 '전문가' 또는 '도구'로서, 웹 탐색, 복잡한 데이터 분석, 사용자 인터랙션 등 고도의 지능과 동적인 행동이 필요한 작업을 수행한다. (예: OpenClaw 에이전트가 시장 분석을 수행)
--   **연동 방식:** MyRules Engine의 워크플로우 내에서 외부 에이전트 프레임워크의 API를 호출하는 형태로 통합한다. 외부 에이전트 프레임워크는 요청된 작업을 수행한 후 결과를 MyRules Engine으로 반환하며, MyRules Engine은 이를 받아 후속 작업을 진행한다.
-
-### 9.5. CLI 기반 Human-in-the-Loop 워크플로우 (Core Strategy)
+## 7. 핵심 전략: Human-in-the-Loop
 
 > [!IMPORTANT]
-> 이 섹션은 프로젝트 시작 동기(1. 프로젝트 개요 참조)를 구체적인 아키텍처로 구현하는 방법을 설명한다.
+> 본 프로젝트의 핵심 차별점은 **"자동화된 API 호출"**이 아니라 **"사용자 주도 생성 및 통제"**에 있다.
 
-**왜 API 자동화 대신 CLI 기반인가?**
+### 7.1. 왜 자동화 대신 Human-in-the-Loop인가?
 
-| 비교 | **API 기반 자동화** | **CLI 기반 Human-in-the-Loop** |
-|------|-------------------|-------------------------------|
-| 실행 방식 | LLM이 자동으로 판단/실행 | 사용자가 명시적으로 트리거 |
-| 비용 | API 호출마다 과금 | CLI 무료 사용량 활용 (e.g., Gemini CLI) |
-| 통제력 | 블랙박스, 폭주 위험 | 실행 전 검토/승인 |
-| 모델 선택 | 코드에 고정 | 원하는 모델로 사용자가 트리거 |
-| 디버깅 | 로그 분석 필요 | 실시간 대화형 확인 가능 |
+| 비교 | **API 기반 자동화** | **Human-in-the-Loop (JobRunner)** |
+| --- | --- | --- |
+| **실행 방식** | LLM 자동 실행 | Host Agent/Gateway를 통한 명시적 트리거 |
+| **비용** | API 호출마다 과금 | Host Agent + Local LLM 활용 |
+| **통제력** | 블랙박스, 폭주 위험 | 코드 생성 → 사용자 리뷰 → 실행 |
+| **모델 선택** | 고정 모델 | 작업별 모델 선택 가능 |
 
-**구현 전략:**
+### 7.2. 구현 프로세스 (Job Factory Flow)
 
-- **주요 흐름:** 긴급하지 않은 작업은 DB에 '생성 대기' 상태로 저장된 후, 사용자가 Gemini CLI를 통해 명시적으로 생성을 요청할 때 LLM Planner가 동작한다. 생성된 워크플로우는 CLI를 통해 사용자에게 먼저 제시되어 **검토 및 승인**을 거친 후 실행된다.
-- **기대 효과:**
-    - **비용 최적화:** 대부분의 LLM '계획' 단계를 API 비용 없이 처리.
-    - **안정성 및 통제력 확보:** LLM이 생성한 코드를 실행 전에 사람이 검토, 의도치 않은 동작 방지.
-    - **세밀한 제어:** 긴급도, 복잡도, 비용에 따라 어떤 모델을 언제 쓸지 직접 결정.
-    - **다용도 활용:** 신규 작업 생성, 실패한 작업의 재처리, 복잡한 승인 프로세스 등에 유연하게 적용.
-- **처리 경로 분기 (라우터):**
-    - 작업의 긴급성, 복잡도에 따라 '실시간 자동 처리 경로'와 'CLI 기반 비동기 처리 경로'를 선택하는 라우터 로직 설계.
-    - 면밀한 검토가 필요한 작업(예: 코드 에이전트가 생성한 코드 리뷰 후 커밋 승인)에 특히 유용.
+**Host Agent 경로 (복잡한 작업):**
+```
+1. 사용자 → Host Agent: "매일 아침 주가 알림 만들어줘"
+2. Host Agent: jr SKILL.md 참조 → jr plan 실행
+3. Host Agent: 코드 생성
+4. 사용자: 리뷰 및 승인
+5. Dagster: 스케줄 실행
+```
+
+**Local Agent Gateway 경로 (간단한 작업):**
+```
+1. 사용자 → Gateway (채팅): "오늘 할일 뭐야?"
+2. Gateway: Task Manager 조회
+3. Gateway → 사용자: 할일 목록 응답
+```
+
+---
+
+## 8. 기능 요구사항 (Functional Requirements)
+
+### Phase 1 요구사항
+
+| ID | 구분 | 기능명 | 설명 | 우선순위 |
+| --- | --- | --- | --- | --- |
+| FR-01 | Skill | **jr SKILL.md** | Host Agent용 jr CLI 사용법 Skill | **Core** |
+| FR-02 | CLI | **코드 생성기** | 자연어 → Dagster 코드 변환 | **Core** |
+| FR-03 | CLI | **코드 리뷰어** | Syntax Highlighting, 승인/수정 | **Core** |
+| FR-04 | CLI | **수동 트리거** | `jr run <job_name>` | Must |
+| FR-05 | Dagster | **자동 리로드** | 파일 변경 감지 | Must |
+| FR-06 | Dagster | **실행 및 로깅** | 스케줄 실행, 로그 저장 | Must |
+| FR-07 | Infra | **로컬 스택** | docker-compose 원커맨드 실행 | Must |
+
+### Phase 3 요구사항 (예정)
+
+| ID | 구분 | 기능명 | 설명 | 우선순위 |
+| --- | --- | --- | --- | --- |
+| FR-10 | Gateway | **채팅 인터페이스** | Local LLM 기반 채팅 UI | Must |
+| FR-11 | Gateway | **작업 라우팅** | 긴급도/복잡도 기반 라우팅 | Must |
+| FR-12 | Task | **Task CRUD** | Task 생성/조회/수정/완료 | Must |
+| FR-13 | Agent | **Agent Worker** | Celery 기반 Worker 관리 | Must |
+| FR-14 | Agent | **Skill 주입** | Agent Factory Skill/MCP 주입 | Should |
+| FR-15 | Agent | **결과 병합** | SubTask 결과 통합 | Should |
+
+---
+
+## 9. 시스템 아키텍처 (System Architecture)
+
+### 9.1. Phase 1 아키텍처 - Host Agent 중심
+
+```mermaid
+graph LR
+    User[Human] -- "자연어 지시" --> HostAgent[Host Agent<br/>Gemini CLI / Claude Code]
+    HostAgent -- "SKILL.md 참조" --> jrCLI[jr CLI]
+    HostAgent -- "Dagster MCP" --> Dagster[Dagster Daemon]
+    jrCLI -- "코드 생성/저장" --> Repo[Local Git Repo /jobs]
+    Repo -- "Auto-load" --> Dagster
+    Dagster -- "Execute" --> Worker[Local Worker]
+    Worker -- "Result" --> DB[(Postgres)]
+```
+
+### 9.2. Phase 3 아키텍처 - 5 모듈 구조
+
+```mermaid
+graph TB
+    subgraph Human Interface
+        User[Human]
+        HostAgent[Host Agent<br/>Cloud LLM]
+        Gateway[Local Agent Gateway<br/>Local LLM + Chat]
+    end
+    
+    subgraph "1. Host Agent Tools"
+        Skill[SKILL.md]
+        CLI[jr CLI]
+        MCP[MCP Servers]
+    end
+    
+    subgraph "2. Workflow Engine"
+        Dagster[Dagster]
+    end
+    
+    subgraph "3. Task Manager"
+        TaskDB[(Task DB)]
+        TaskAPI[Task API]
+    end
+    
+    subgraph "4. Agent Manager"
+        LocalAgent[Local LLM Agent]
+        CloudAgent[Cloud LLM Agent]
+    end
+    
+    User --> HostAgent
+    User --> Gateway
+    
+    HostAgent --> Skill
+    HostAgent --> CLI
+    HostAgent --> MCP
+    
+    Gateway --> TaskAPI
+    Gateway --> LocalAgent
+    Gateway -.-> CloudAgent
+    
+    CLI --> TaskAPI
+    CLI --> Dagster
+    MCP --> Dagster
+    
+    TaskAPI --> TaskDB
+    
+    LocalAgent --> Dagster
+    CloudAgent --> Dagster
+```
+
+### 9.3. 디렉토리 구조 (Repository)
+
+```
+/jobrunner
+├── /jobs                 # LLM 생성 코드 저장
+├── /templates            # Dagster 코드 템플릿
+├── /cli                  # jr CLI 구현체
+├── /skills               # Host Agent용 SKILL.md
+├── /gateway              # [Phase 3] Local Agent Gateway
+├── /agents               # [Phase 3] Agent Manager
+├── /api                  # [Phase 3] FastAPI 백엔드
+├── dagster.yaml
+├── docker-compose.yml
+└── pyproject.toml
+```
+
+---
+
+## 10. 비기능 요구사항 (Non-Functional Requirements)
+
+* **Security (Local):** API Key는 `.env`로 로컬 관리.
+* **Fail-Safe:** `ast.parse()`로 생성 코드 사전 검증.
+* **환경 분리:** (Phase 3) Agent Worker와 Dagster Execution 분리.
+
+---
+
+## 11. 기술 스택 요약
+
+| 영역 | Phase 1 | Phase 3 |
+| --- | --- | --- |
+| **Host Agent** | Gemini CLI, Claude Code | 유지 |
+| **Local Agent Gateway** | - | Local LLM + Chat UI |
+| **Orchestration** | Dagster | Dagster + MCP |
+| **Task Queue** | - | Redis + Celery |
+| **Local LLM** | - | Ollama |
+| **Backend API** | - | FastAPI |
+| **jr CLI** | Click / Typer | 유지 |
+| **Task Storage** | - | Postgres |
+| **Database** | PostgreSQL | PostgreSQL |
+| **Container** | Docker Compose | Docker Compose |
