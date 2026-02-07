@@ -1,0 +1,70 @@
+version: "3.8"
+
+services:
+  # PostgreSQL - Dagster 메타데이터 저장
+  postgres:
+    image: postgres:16-alpine
+    container_name: jobrunner-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-dagster}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dagster}
+      POSTGRES_DB: ${POSTGRES_DB:-dagster}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dagster"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Dagster Webserver (UI)
+  dagster-webserver:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: jobrunner-webserver
+    entrypoint:
+      - dagster-webserver
+      - -h
+      - "0.0.0.0"
+      - -p
+      - "3000"
+      - -w
+      - workspace.yaml
+    ports:
+      - "3000:3000"
+    environment:
+      DAGSTER_PG_CONN_STRING: postgresql://${POSTGRES_USER:-dagster}:${POSTGRES_PASSWORD:-dagster}@postgres:5432/${POSTGRES_DB:-dagster}
+      DAGSTER_CURRENT_IMAGE: jobrunner-dagster
+    volumes:
+      - ../src:/app/src
+      - ../dagster.yaml:/app/dagster.yaml
+      - ./workspace.yaml:/app/workspace.yaml
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Dagster Daemon (스케줄러, 센서 실행)
+  dagster-daemon:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: jobrunner-daemon
+    entrypoint:
+      - dagster-daemon
+      - run
+    environment:
+      DAGSTER_PG_CONN_STRING: postgresql://${POSTGRES_USER:-dagster}:${POSTGRES_PASSWORD:-dagster}@postgres:5432/${POSTGRES_DB:-dagster}
+      DAGSTER_CURRENT_IMAGE: jobrunner-dagster
+    volumes:
+      - ../src:/app/src
+      - ../dagster.yaml:/app/dagster.yaml
+      - ./workspace.yaml:/app/workspace.yaml
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
