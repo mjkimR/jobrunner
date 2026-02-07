@@ -87,7 +87,6 @@ class TestRuleExecutorWithRegistry:
         """Create a RuleExecutor instance."""
         return RuleExecutor()
 
-    @pytest.mark.asyncio
     async def test_execute_registered_rule(self, executor: RuleExecutor):
         """Execute a registered async rule."""
         from scripts.registry import rule
@@ -101,7 +100,6 @@ class TestRuleExecutorWithRegistry:
         assert result.success is True
         assert "Got: value" in result.message
 
-    @pytest.mark.asyncio
     async def test_execute_rule_not_found(self, executor: RuleExecutor):
         """Handle missing rule gracefully."""
         result = await executor.execute("nonexistent_rule", {})
@@ -110,7 +108,6 @@ class TestRuleExecutorWithRegistry:
         assert result.error is not None
         assert "not found" in result.error.lower()
 
-    @pytest.mark.asyncio
     async def test_execute_rule_with_exception(self, executor: RuleExecutor):
         """Handle rule that raises an exception."""
         from scripts.registry import rule
@@ -124,7 +121,6 @@ class TestRuleExecutorWithRegistry:
         assert result.success is False
         assert result.error is not None
 
-    @pytest.mark.asyncio
     async def test_execute_rule_returns_failure(self, executor: RuleExecutor):
         """Rule returns success=False."""
         from scripts.registry import rule
@@ -138,7 +134,6 @@ class TestRuleExecutorWithRegistry:
         assert result.success is False
         assert "Validation failed" in result.message
 
-    @pytest.mark.asyncio
     async def test_path_normalization(self, executor: RuleExecutor):
         """Test script path to rule name normalization."""
         from scripts.registry import rule
@@ -228,7 +223,6 @@ class TestRuleChain:
         yield
         rule_registry.clear()
 
-    @pytest.mark.asyncio
     async def test_execute_chain_passes_context(self):
         """Chain passes prev_results in context."""
         from scripts.registry import rule
@@ -252,7 +246,6 @@ class TestRuleChain:
         assert results[1].success is True
         assert results[1].data.get("result") == 20
 
-    @pytest.mark.asyncio
     async def test_chain_stops_on_failure(self):
         """Chain stops when a rule fails."""
         from scripts.registry import rule
@@ -296,7 +289,6 @@ class TestHelloWorldScript:
         yield
         rule_registry.clear()
 
-    @pytest.mark.asyncio
     async def test_hello_world_via_registry(self):
         """Execute hello_world through registry."""
         from scripts.registry import rule_registry
@@ -309,7 +301,6 @@ class TestHelloWorldScript:
         assert result["success"] is True
         assert "Hello, JobRunner" in result["message"]
 
-    @pytest.mark.asyncio
     async def test_hello_world_via_executor(self):
         """Execute hello_world through RuleExecutor."""
         executor = RuleExecutor()

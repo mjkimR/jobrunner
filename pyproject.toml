@@ -24,9 +24,11 @@ app-base = { git = "https://github.com/mjkimR/app-common.git", subdirectory = "a
 app-tools = { git = "https://github.com/mjkimR/app-common.git", subdirectory = "app-tools", rev = "main" }
 
 [dependency-groups]
-dev = [
-    "app-tools",
-    "pytest>=9.0.2",
-    "pytest-asyncio>=1.3.0",
-    "ruff>=0.15.0",
-]
+dev = ["app-tools", "pytest>=9.0.2", "pytest-asyncio>=1.3.0", "ruff>=0.15.0"]
+
+[tool.pytest.ini_options]
+log_level = "INFO"
+pythonpath = "src"
+testpaths = "src/tests"
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
