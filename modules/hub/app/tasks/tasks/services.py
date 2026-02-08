@@ -16,16 +16,23 @@ from app_base.base.services.base import (
 from fastapi import Depends
 
 
+class TagContextKwargs(BaseContextKwargs):
+    pass
+
+
 class TaskService(
-    BaseCreateServiceMixin[TaskRepository, Task, TaskCreate, BaseContextKwargs],
-    BaseGetMultiServiceMixin[TaskRepository, Task, BaseContextKwargs],
-    BaseGetServiceMixin[TaskRepository, Task, BaseContextKwargs],
-    BaseUpdateServiceMixin[TaskRepository, Task, TaskUpdate, BaseContextKwargs],
-    BaseDeleteServiceMixin[TaskRepository, Task, BaseContextKwargs],
+    BaseCreateServiceMixin[TaskRepository, Task, TaskCreate, TagContextKwargs],
+    BaseGetMultiServiceMixin[TaskRepository, Task, TagContextKwargs],
+    BaseGetServiceMixin[TaskRepository, Task, TagContextKwargs],
+    BaseUpdateServiceMixin[TaskRepository, Task, TaskUpdate, TagContextKwargs],
+    BaseDeleteServiceMixin[TaskRepository, Task, TagContextKwargs],
 ):
     """Service for Task business logic."""
 
-    def __init__(self, repo: Annotated[TaskRepository, Depends()]):
+    def __init__(
+        self,
+        repo: Annotated[TaskRepository, Depends()],
+    ):
         self._repo = repo
 
     @property
@@ -34,4 +41,4 @@ class TaskService(
 
     @property
     def context_model(self):
-        return BaseContextKwargs
+        return TagContextKwargs

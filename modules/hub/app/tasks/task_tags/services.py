@@ -14,6 +14,7 @@ from app_base.base.services.base import (
     BaseUpdateServiceMixin,
 )
 from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class TaskTagService(
@@ -35,3 +36,19 @@ class TaskTagService(
     @property
     def context_model(self):
         return BaseContextKwargs
+
+    async def get_or_create_tags(self, session: AsyncSession, tag_names: list[str]) -> list[TaskTag]:
+        """Get existing tags or create new ones from a list of names."""
+        tags = []
+        for name in tag_names:
+            normalized_name = name.strip()
+            if not normalized_name:
+                continue
+
+            tag = await self.repo.get_by_name(session, normalized_name)
+            if not tag:
+                # Create new tag
+                tag_create = TaskTagCreate(name=normalized_name)
+                tag = await self.create(session, tag_create)
+            tags.append(tag)
+        return tags

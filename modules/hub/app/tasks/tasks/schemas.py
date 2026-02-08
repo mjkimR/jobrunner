@@ -5,10 +5,14 @@ Pydantic schemas for Task CRUD operations.
 
 import datetime
 import uuid
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 from app_base.base.schemas.mixin import TimestampSchemaMixin, UUIDSchemaMixin
 from pydantic import BaseModel, ConfigDict, Field
+
+if TYPE_CHECKING:
+    from app.tasks.task_tags.models import TaskTag
+    from app.tasks.task_tags.schemas import TaskTagRead
 
 
 class TaskCreate(BaseModel):
@@ -35,7 +39,13 @@ class TaskCreate(BaseModel):
         default=None, max_length=255, description="External reference (e.g., GitHub Issue URL)"
     )
     due_date: datetime.datetime | None = Field(default=None, description="Due date")
-    tag_ids: list[uuid.UUID] | None = Field(default=None, description="Tag IDs to associate")
+    tags: list[str] = Field(default_factory=list, description="List of tag names")
+
+
+class TaskDbCreate(TaskCreate):
+    """Schema for creating a new Task in the database."""
+
+    tags: list["TaskTag"] = Field(default_factory=list, description="List of tag names")
 
 
 class TaskUpdate(BaseModel):
@@ -58,7 +68,13 @@ class TaskUpdate(BaseModel):
     due_date: datetime.datetime | None = Field(default=None, description="Due date")
     completed_at: datetime.datetime | None = Field(default=None, description="Completion time")
     result_summary: str | None = Field(default=None, description="Result summary")
-    tag_ids: list[uuid.UUID] | None = Field(default=None, description="Tag IDs to update")
+    tags: list[str] | None = Field(default=None, description="List of tag names")
+
+
+class TaskDbUpdate(TaskUpdate):
+    """Schema for updating an existing Task in the database."""
+
+    tags: list["TaskTag"] | None = Field(default=None, description="List of tag names")
 
 
 class TaskRead(UUIDSchemaMixin, TimestampSchemaMixin, BaseModel):
@@ -87,8 +103,5 @@ class TaskReadWithRelations(TaskRead):
     subtasks: list[TaskRead] = Field(default_factory=list, description="Subtasks")
     tags: list["TaskTagRead"] = Field(default_factory=list, description="Associated tags")
 
-
-# Forward reference
-from app.tasks.task_tags.schemas import TaskTagRead  # noqa: E402, F401
 
 TaskReadWithRelations.model_rebuild()
