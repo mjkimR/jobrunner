@@ -134,7 +134,7 @@ Task 상태 변경 및 할당 이력. Agent 할당도 이력으로 관리하여 
 
 ### 2.1. AIModelRegistry
 
-사용 가능한 AI 모델 목록.
+사용 가능한 AI 모델 목록. `catalog.yml`의 `models` 섹션과 호환.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -144,9 +144,11 @@ Task 상태 변경 및 할당 이력. Agent 할당도 이력으로 관리하여 
 │     name            VARCHAR(100)  NOT NULL  UNIQUE                          │
 │     provider        VARCHAR(50)   NOT NULL                                  │
 │     model_name      VARCHAR(100)  NOT NULL                                  │
+│     model_type      VARCHAR(50)   NOT NULL  DEFAULT 'llm'                   │
 │     description     TEXT          NULL                                      │
 │     capabilities    JSONB         NOT NULL  DEFAULT '[]'                    │
-│     config          JSONB         NOT NULL  DEFAULT '{}'                    │
+│     args            JSONB         NOT NULL  DEFAULT '{}'                    │
+│     param_spec      JSONB         NULL      -- exclude/map 규칙             │
 │     is_active       BOOLEAN       NOT NULL  DEFAULT true                    │
 │     created_at      TIMESTAMP     NOT NULL  DEFAULT now()                   │
 │     updated_at      TIMESTAMP     NOT NULL  DEFAULT now()                   │
@@ -157,14 +159,76 @@ Task 상태 변경 및 할당 이력. Agent 할당도 이력으로 관리하여 
 
 | 컬럼 | 설명 | 예시 |
 |------|------|------|
-| `provider` | 모델 제공자 | `ollama`, `openai`, `anthropic`, `google` |
-| `model_name` | 모델 식별자 | `qwen2.5-coder:7b`, `gpt-4o`, `claude-3-5-sonnet` |
+| `provider` | 모델 제공자 | `ollama`, `openai`, `openai-compatible`, `google` |
+| `model_name` | 모델 식별자 | `gpt-4`, `gemini-2.5-flash`, `qwen2.5-coder:7b` |
+| `model_type` | 모델 유형 | `llm`, `text-embedding`, `vision` |
+| `args` | 연결 인자 | `{"api_key": "${OPENAI_API_KEY}", "base_url": "..."}` |
+| `param_spec` | 파라미터 변환 규칙 | `{"exclude": ["temperature"], "map": {"max_tokens": "max_completion_tokens"}}` |
 | `capabilities` | 모델 능력 태그 | `["code", "reasoning", "vision"]` |
-| `config` | 기본 설정 | `{"context_window": 32768, "supports_tools": true}` |
 
 ---
 
-### 2.2. ConfiguredAgent
+### 2.2. AIModelAlias
+
+모델 별칭. fallback 체인 지원. `catalog.yml`의 `aliases` 섹션과 호환.
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ ai_model_aliases                                                            │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ PK  id              UUID          NOT NULL                                  │
+│     name            VARCHAR(100)  NOT NULL  UNIQUE                          │
+│     model_type      VARCHAR(50)   NOT NULL                                  │
+│ FK  target_model_id UUID          NOT NULL  -> ai_model_registry.id         │
+│     fallbacks       JSONB         NULL      -- ["alias1", "alias2"]         │
+│     description     TEXT          NULL                                      │
+│     is_active       BOOLEAN       NOT NULL  DEFAULT true                    │
+│     created_at      TIMESTAMP     NOT NULL  DEFAULT now()                   │
+│     updated_at      TIMESTAMP     NOT NULL  DEFAULT now()                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+**컬럼 설명:**
+
+| 컬럼 | 설명 | 예시 |
+|------|------|------|
+| `name` | 별칭 이름 | `llm-default`, `llm-high-performance` |
+| `model_type` | 모델 유형 | `llm`, `text-embedding` |
+| `target_model_id` | 대상 모델 FK | ai_model_registry 참조 |
+| `fallbacks` | fallback 별칭 목록 | `["llm-default"]` |
+
+---
+
+### 2.3. AIModelGroup
+
+모델 그룹. `catalog.yml`의 `groups` 섹션과 호환.
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ ai_model_groups                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ PK  id              UUID          NOT NULL                                  │
+│     name            VARCHAR(100)  NOT NULL  UNIQUE                          │
+│     model_type      VARCHAR(50)   NOT NULL                                  │
+│     members         JSONB         NOT NULL  -- ["alias1", "alias2"]         │
+│ FK  default_alias_id UUID         NULL      -> ai_model_aliases.id          │
+│     description     TEXT          NULL                                      │
+│     created_at      TIMESTAMP     NOT NULL  DEFAULT now()                   │
+│     updated_at      TIMESTAMP     NOT NULL  DEFAULT now()                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+**컬럼 설명:**
+
+| 컬럼 | 설명 | 예시 |
+|------|------|------|
+| `name` | 그룹 이름 | `llm-models`, `embedding-models` |
+| `members` | 멤버 별칭 목록 | `["llm-default", "llm-high-performance"]` |
+| `default_alias_id` | 기본 별칭 FK | ai_model_aliases 참조 |
+
+---
+
+### 2.4. ConfiguredAgent
 
 Hub에서 설정으로 정의되는 Agent. Model + Skill/MCP 조합.
 
@@ -194,7 +258,7 @@ Hub에서 설정으로 정의되는 Agent. Model + Skill/MCP 조합.
 
 ---
 
-### 2.3. ConfiguredAgentSkill / ConfiguredAgentMCP (M:N)
+### 2.5. ConfiguredAgentSkill / ConfiguredAgentMCP (M:N)
 
 Configured Agent에 연결된 Skill 및 MCP.
 
@@ -218,7 +282,7 @@ Configured Agent에 연결된 Skill 및 MCP.
 
 ---
 
-### 2.4. AgentExecution
+### 2.6. AgentExecution
 
 Agent 실행 이력. Configured Agent 및 Graph Agent 모두의 실행을 추적.
 
@@ -259,7 +323,7 @@ Agent 실행 이력. Configured Agent 및 Graph Agent 모두의 실행을 추적
 
 ---
 
-### 2.3. SkillRegistry
+### 2.7. SkillRegistry
 
 Agent에 주입 가능한 Skill 카탈로그.
 
@@ -280,7 +344,7 @@ Agent에 주입 가능한 Skill 카탈로그.
 
 ---
 
-### 2.4. MCPRegistry
+### 2.8. MCPRegistry
 
 Agent에 연결 가능한 MCP Server 목록.
 
@@ -417,7 +481,15 @@ CREATE INDEX idx_task_history_event_type ON task_history(event_type);
 ### Agents
 ```sql
 CREATE INDEX idx_ai_models_provider ON ai_model_registry(provider);
+CREATE INDEX idx_ai_models_type ON ai_model_registry(model_type);
 CREATE INDEX idx_ai_models_active ON ai_model_registry(is_active);
+
+CREATE INDEX idx_ai_aliases_type ON ai_model_aliases(model_type);
+CREATE INDEX idx_ai_aliases_target ON ai_model_aliases(target_model_id);
+CREATE INDEX idx_ai_aliases_active ON ai_model_aliases(is_active);
+
+CREATE INDEX idx_ai_groups_type ON ai_model_groups(model_type);
+CREATE INDEX idx_ai_groups_default ON ai_model_groups(default_alias_id);
 
 CREATE INDEX idx_configured_agents_model ON configured_agents(model_id);
 CREATE INDEX idx_configured_agents_active ON configured_agents(is_active);
@@ -458,3 +530,5 @@ CREATE INDEX idx_routing_logs_message ON routing_logs(message_id);
 | 2026-02-08 | v0.1.0 | 초기 스키마 설계 |
 | 2026-02-08 | v0.1.1 | `queue` 필드 추가, `assigned_agent_id`를 `task_history`로 이동 |
 | 2026-02-08 | v0.2.0 | Agent 아키텍처 개편: `ai_model_registry`, `configured_agents` 추가, Configured/Graph Agent 분리 |
+| 2026-02-08 | v0.2.1 | AI 카탈로그 호환: `ai_model_aliases`, `ai_model_groups` 추가, `model_type`, `args`, `param_spec` 필드 추가 |
+
