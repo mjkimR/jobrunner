@@ -8,10 +8,10 @@
 
 
 * **핵심 컨셉:**
-  * **(Phase 1) Local & CLI First:** 모든 인프라는 로컬 Docker에서 구동된다. Host Agent(Gemini CLI, Claude Code 등)를 통해 자연어로 작업을 지시하고, 생성된 코드를 검토 후 실행한다.
-  * **(Phase 2) Dynamic Dagster:** 정적 파일 수정 없이도 LLM이 생성한 파이썬 코드를 즉시 Dagster 자산(Asset)으로 로드하고 실행하는 동적 파이프라인을 구축한다.
-  * **(Phase 3) Agent & Task Management:** Local Agent Gateway를 통해 Human Interface를 이원화하고, Task Manager와 Agent Manager로 복잡한 작업의 분해/병렬처리/병합을 지원한다.
-  * **(Phase 4) Cloud Extension:** (Optional) 로컬 자원이 부족하거나 24시간 가동이 필수적인 경우에만 선별적으로 클라우드로 확장한다.
+  * **(Foundation) Dagster 기반 워크플로우:** 모든 인프라는 로컬 Docker에서 구동된다. Dagster 공식 Skill/MCP를 활용하여 Host Agent가 워크플로우를 제어한다.
+  * **(Phase 1) Agent & Task Management:** Local Agent Gateway를 통해 Human Interface를 이원화하고, Task Manager와 Agent Manager로 복잡한 작업의 분해/병렬처리/병합을 지원한다. **← 핵심 차별점**
+  * **(Phase 2) Cloud Extension:** (Optional) 로컬 자원이 부족하거나 24시간 가동이 필수적인 경우에만 선별적으로 클라우드로 확장한다.
+  * **(TBD) Dynamic Dagster:** 동적 코드 로딩은 Dagster 네이티브 기능 검토 후 필요시 구현.
 
 
 * **프로젝트 시작 동기:**
@@ -112,43 +112,33 @@
 
 ---
 
-## 3. Phase 1 범위 (Scope) - Local Intelligence
+## 3. Foundation - Dagster 기반 워크플로우
 
-**In-Scope:**
+> [!NOTE]
+> Dagster 공식 Skill/MCP가 풍부하게 지원되므로, 일반적인 Dagster 사용은 공식 도구로 충분히 커버된다.
+> JobRunner는 도메인 특화 Skill과 추가 모듈 연동에 집중한다.
+
+**구성 요소:**
 
 * **로컬 런타임 환경:** 사용자 PC(Local)에서 `Docker Compose`로 Dagster, PostgreSQL, Redis를 구동.
 * **Host Agent 연동:** Gemini CLI, Claude Code 등 Skill/MCP 지원 Agent Client가 시스템을 제어.
-* **JobRunner CLI (`jr`):** Host Agent가 사용하는 도구. Dagster 코드 생성/수정/실행 인터페이스 제공.
+* **공식 Dagster Skill 활용:**
+  * `dagster-expert`: 프로젝트 생성, asset 패턴, 자동화, CLI 커맨드
+  * `dagster-integrations`: 82+ 통합 카탈로그
+* **JobRunner 도메인 Skill (`jr`):** 본 프로젝트 구성에 특화된 CLI 및 가이드.
   * jr 사용법은 SKILL.md로 Host Agent에 주입됨.
-* **LLM 기반 코드 생성 (Code-as-Data):** 자연어 요청을 Dagster Asset/Op 파이썬 코드로 변환.
-* **인간 검토 프로세스 (Review & Approve):** 생성된 코드를 실행하기 전 승인.
 * **Dagster 연동:** Dagster MCP 또는 jr CLI를 통해 제어.
 
-**Out-of-Scope (Phase 1):**
-
-* 클라우드 인프라 (GCP, AWS 등).
-* Local Agent Gateway (Phase 3).
-* Task Manager (Phase 3).
-* Agent Manager (Phase 3).
-* 24시간 무중단 서버 운영.
-
 ---
 
-## 4. Phase 2 범위 - Dynamic Dagster
+## 4. Phase 1 범위 - Agent & Task Management
+
+> [!IMPORTANT]
+> JobRunner의 핵심 차별점. Human Interface 이원화와 멀티 Agent 협업 모델을 구축한다.
 
 **In-Scope:**
 
-* **동적 Asset 로딩:** LLM이 생성한 Python 코드를 파일 저장 없이 즉시 Dagster Asset으로 등록/실행.
-* **코드 버전 관리:** 생성된 코드의 히스토리 관리 및 롤백 지원.
-* **향상된 템플릿 시스템:** 다양한 유스케이스별 Dagster 코드 템플릿 확장.
-
----
-
-## 5. Phase 3 범위 - Agent & Task Management
-
-**In-Scope:**
-
-### 5.1. Local Agent Gateway
+### 4.1. Local Agent Gateway
 
 | 항목 | 설명 |
 |------|------|
@@ -160,7 +150,7 @@
 - 가능: 상태 조회, 간단한 질문 응답, 기존 Job 즉시 실행
 - 불가 (Host Agent 필요): 새로운 Job 코드 생성, 복잡한 의사결정, 시스템 설정 변경
 
-### 5.2. Task Manager
+### 4.2. Task Manager
 
 * **Task Storage:** 자체 DB (Postgres)
   * 쿼리 자유도 높음, Task-SubTask 관계/Agent 할당 이력 관리
@@ -170,14 +160,14 @@
   * 병렬 할당 (Assignment): 유휴 Agent가 Task 처리
   * 결과 병합 (Aggregation): 최종 Planner가 통합
 
-### 5.3. Agent Manager
+### 4.3. Agent Manager
 
 | 컴포넌트 | 역할 | 사용 조건 |
 | --- | --- | --- |
 | **Local LLM Agent** | Local LLM 자원으로 경량 작업 처리 | 기본 |
 | **Cloud LLM Agent** | Cloud LLM으로 복잡/긴급 작업 처리 | Host Agent 개입 불가 + Local LLM 한계 시 |
 
-### 5.4. Agent Configuration
+### 4.4. Agent Configuration
 
 * **Agent Factory:** 역할 기반 Agent 인스턴스 생성.
 * **Skill Registry:** SKILL.md 기반 능력 카탈로그.
@@ -186,10 +176,28 @@
 
 ---
 
-## 6. Phase 4 범위 - Cloud Extension
+## 5. Phase 2 범위 - Cloud Extension
 
 * **Hybrid 전환:** `dagster-daemon` 컨테이너를 라즈베리파이 또는 VPS로 이동.
 * **Cloud Native:** 팀 단위 협업/대규모 처리 시 K8s 확장 (현재 고려 대상 아님).
+
+---
+
+## 6. TBD - Dynamic Dagster
+
+> [!NOTE]
+> Dagster 네이티브 기능으로 동적 로딩이 가능할 수 있음.
+> 실제 구현 필요성 및 방식은 추후 검토.
+
+**검토 항목:**
+* Dagster의 `Definitions` 동적 갱신 가능 여부
+* `dagster-pipes` 활용 가능성
+* Code Location 런타임 리로드 메커니즘
+
+**잠재적 기능:**
+* 동적 Asset 로딩: LLM이 생성한 Python 코드를 즉시 Asset으로 등록/실행
+* 코드 버전 관리: 생성된 코드의 히스토리 관리 및 롤백 지원
+* 향상된 템플릿 시스템: 다양한 유스케이스별 Dagster 코드 템플릿 확장
 
 ---
 
@@ -229,24 +237,21 @@
 
 ## 8. 기능 요구사항 (Functional Requirements)
 
-### Phase 1 요구사항
+### Foundation 요구사항
 
 | ID | 구분 | 기능명 | 설명 | 우선순위 |
 | --- | --- | --- | --- | --- |
 | FR-01 | Skill | **jr SKILL.md** | Host Agent용 jr CLI 사용법 Skill | **Core** |
-| FR-02 | CLI | **코드 생성기** | 자연어 → Dagster 코드 변환 | **Core** |
-| FR-03 | CLI | **코드 리뷰어** | Syntax Highlighting, 승인/수정 | **Core** |
-| FR-04 | CLI | **수동 트리거** | `jr run <job_name>` | Must |
-| FR-05 | Dagster | **자동 리로드** | 파일 변경 감지 | Must |
-| FR-06 | Dagster | **실행 및 로깅** | 스케줄 실행, 로그 저장 | Must |
-| FR-07 | Infra | **로컬 스택** | docker-compose 원커맨드 실행 | Must |
+| FR-02 | Infra | **로컬 스택** | docker-compose 원커맨드 실행 | Must |
+| FR-03 | Dagster | **자동 리로드** | 파일 변경 감지 | Must |
+| FR-04 | Dagster | **실행 및 로깅** | 스케줄 실행, 로그 저장 | Must |
 
-### Phase 3 요구사항 (예정)
+### Phase 1 요구사항 (Agent & Task Management)
 
 | ID | 구분 | 기능명 | 설명 | 우선순위 |
 | --- | --- | --- | --- | --- |
-| FR-10 | Gateway | **채팅 인터페이스** | Local LLM 기반 채팅 UI | Must |
-| FR-11 | Gateway | **작업 라우팅** | 긴급도/복잡도 기반 라우팅 | Must |
+| FR-10 | Gateway | **채팅 인터페이스** | Local LLM 기반 채팅 UI | **Core** |
+| FR-11 | Gateway | **작업 라우팅** | 긴급도/복잡도 기반 라우팅 | **Core** |
 | FR-12 | Task | **Task CRUD** | Task 생성/조회/수정/완료 | Must |
 | FR-13 | Agent | **Agent Worker** | Celery 기반 Worker 관리 | Must |
 | FR-14 | Agent | **Skill 주입** | Agent Factory Skill/MCP 주입 | Should |
@@ -256,20 +261,19 @@
 
 ## 9. 시스템 아키텍처 (System Architecture)
 
-### 9.1. Phase 1 아키텍처 - Host Agent 중심
+### 9.1. Foundation 아키텍처 - Host Agent 중심
 
 ```mermaid
 graph LR
     User[Human] -- "자연어 지시" --> HostAgent[Host Agent<br/>Gemini CLI / Claude Code]
-    HostAgent -- "SKILL.md 참조" --> jrCLI[jr CLI]
-    HostAgent -- "Dagster MCP" --> Dagster[Dagster Daemon]
-    jrCLI -- "코드 생성/저장" --> Repo[Local Git Repo /jobs]
-    Repo -- "Auto-load" --> Dagster
+    HostAgent -- "공식 Skill/MCP" --> Dagster[Dagster Daemon]
+    HostAgent -- "도메인 Skill" --> jrCLI[jr CLI]
+    jrCLI --> Dagster
     Dagster -- "Execute" --> Worker[Local Worker]
     Worker -- "Result" --> DB[(Postgres)]
 ```
 
-### 9.2. Phase 3 아키텍처 - 5 모듈 구조
+### 9.2. Phase 1 아키텍처 - 5 모듈 구조
 
 ```mermaid
 graph TB
@@ -343,17 +347,17 @@ graph TB
 
 * **Security (Local):** API Key는 `.env`로 로컬 관리.
 * **Fail-Safe:** `ast.parse()`로 생성 코드 사전 검증.
-* **환경 분리:** (Phase 3) Agent Worker와 Dagster Execution 분리.
+* **환경 분리:** (Phase 1) Agent Worker와 Dagster Execution 분리.
 
 ---
 
 ## 11. 기술 스택 요약
 
-| 영역 | Phase 1 | Phase 3 |
+| 영역 | Foundation | Phase 1 |
 | --- | --- | --- |
 | **Host Agent** | Gemini CLI, Claude Code | 유지 |
 | **Local Agent Gateway** | - | Local LLM + Chat UI |
-| **Orchestration** | Dagster | Dagster + MCP |
+| **Orchestration** | Dagster + 공식 MCP | Dagster + MCP |
 | **Task Queue** | - | Redis + Celery |
 | **Local LLM** | - | Ollama |
 | **Backend API** | - | FastAPI |

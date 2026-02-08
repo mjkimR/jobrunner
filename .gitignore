@@ -16,5 +16,8 @@ wheels/
 # Virtual environments
 .venv
 
+# Docker
+!.dockerignore
+
 # Others
 **/logs
