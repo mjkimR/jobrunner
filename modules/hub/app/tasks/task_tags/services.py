@@ -1,3 +1,5 @@
+"""TaskTag Service for Hub Module."""
+
 from typing import Annotated
 
 from app.tasks.task_tags.models import TaskTag
@@ -21,6 +23,8 @@ class TaskTagService(
     BaseUpdateServiceMixin[TaskTagRepository, TaskTag, TaskTagUpdate, BaseContextKwargs],
     BaseDeleteServiceMixin[TaskTagRepository, TaskTag, BaseContextKwargs],
 ):
+    """Service for TaskTag business logic."""
+
     def __init__(self, repo: Annotated[TaskTagRepository, Depends()]):
         self._repo = repo
 

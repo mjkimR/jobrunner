@@ -1,3 +1,5 @@
+"""TaskHistory Service for Hub Module."""
+
 from typing import Annotated
 
 from app.tasks.task_histories.models import TaskHistory
@@ -21,6 +23,8 @@ class TaskHistoryService(
     BaseUpdateServiceMixin[TaskHistoryRepository, TaskHistory, TaskHistoryUpdate, BaseContextKwargs],
     BaseDeleteServiceMixin[TaskHistoryRepository, TaskHistory, BaseContextKwargs],
 ):
+    """Service for TaskHistory business logic."""
+
     def __init__(self, repo: Annotated[TaskHistoryRepository, Depends()]):
         self._repo = repo
 

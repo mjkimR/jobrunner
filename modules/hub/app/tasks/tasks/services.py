@@ -1,3 +1,5 @@
+"""Task Service for Hub Module."""
+
 from typing import Annotated
 
 from app.tasks.tasks.models import Task
@@ -21,6 +23,8 @@ class TaskService(
     BaseUpdateServiceMixin[TaskRepository, Task, TaskUpdate, BaseContextKwargs],
     BaseDeleteServiceMixin[TaskRepository, Task, BaseContextKwargs],
 ):
+    """Service for Task business logic."""
+
     def __init__(self, repo: Annotated[TaskRepository, Depends()]):
         self._repo = repo
 
