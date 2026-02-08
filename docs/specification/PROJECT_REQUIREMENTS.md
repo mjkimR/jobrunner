@@ -328,17 +328,31 @@ graph TB
 
 ```
 /jobrunner
-├── /docker               # Docker Compose, Dockerfile 등
-├── /skills               # Host Agent용 SKILL.md
-├── /src
-│   ├── /jobs             # LLM 생성 코드 저장
-│   ├── /templates        # Dagster 코드 템플릿
-│   ├── /cli              # jr CLI 구현체
-│   ├── /gateway          # [Phase 3] Local Agent Gateway
-│   ├── /agents           # [Phase 3] Agent Manager
-│   └── /app              # [Phase 3] FastAPI 백엔드
-├── dagster.yaml
-└── pyproject.toml
+├── /modules                    # 서브프로젝트 (uv workspace)
+│   ├── /agent-tools            # jr-agent-tools: Host Agent용 도구
+│   │   ├── /cli                # jr CLI 구현체
+│   │   ├── /skills             # SKILL.md 정의
+│   │   └── pyproject.toml
+│   │
+│   ├── /workflow               # jr-workflow: Dagster 워크플로우
+│   │   ├── /jobs               # LLM 생성 코드 저장
+│   │   ├── /templates          # Dagster 코드 템플릿
+│   │   ├── dagster.yaml
+│   │   └── pyproject.toml
+│   │
+│   └── /hub                    # jr-hub: Gateway + Task/Agent Manager
+│       ├── /app                # FastAPI 백엔드
+│       │   ├── /features
+│       │   │   ├── /gateway    # Local Agent Gateway
+│       │   │   ├── /tasks      # Task Manager
+│       │   │   └── /agents     # Agent Manager
+│       │   └── main.py
+│       └── pyproject.toml
+│
+├── /docker                     # Docker Compose, Dockerfile 등
+├── /docs                       # 문서
+├── pyproject.toml              # 루트 (workspace 정의)
+└── README.md
 ```
 
 ---

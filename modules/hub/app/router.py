@@ -1,5 +1,6 @@
 from typing import Annotated
 
+from app.features.tasks.api.v1 import router as v1_tasks_router
 from app_base.core.database.deps import get_session
 from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy import text
@@ -28,4 +29,5 @@ async def deep_health_check(session: Annotated[AsyncSession, Depends(get_session
 
 # Feature routers
 
+v1_router.include_router(v1_tasks_router)
 router.include_router(v1_router)

@@ -127,32 +127,85 @@ Host Agent가 결과 요약하여 사용자에게 보고
 
 ## 4. Agent Manager
 
-Worker LLM Agent들을 관리하고 실행을 조율.
+Worker LLM Agent들의 설정을 관리하고 Workflow Engine에 제공.
 
 | 항목 | 설명 |
 |------|------|
-| **역할** | Worker Agent 생명주기 관리, 실행 조율 |
-| **기술 스택** | Celery + Redis, Ollama (Local LLM) |
+| **역할** | Agent 설정 관리, Registry 제공 |
+| **기술 스택** | Hub (FastAPI + PostgreSQL), LangChain/LangGraph |
 
-### 4.1. Local LLM Agent
+> [!IMPORTANT]
+> **설정/실행 분리 원칙**
+> - **Hub**: Agent 설정(Configuration)만 관리 - Model, Skill, MCP 조합
+> - **Workflow Engine**: 실제 LLM 호출 및 실행 담당 - LangGraph 생태계 활용
+
+### 4.1. Configured Agent
+
+Hub에서 설정으로 정의되는 Agent. Model + Skill/MCP 조합.
 
 | 항목 | 설명 |
 |------|------|
-| **역할** | Local LLM 자원을 활용한 작업 처리 |
-| **적합한 작업** | 잘 쪼개진 비정형 작업, 단순 추론, 텍스트 처리 |
-| **기술 스택** | Ollama, Celery Worker |
+| **정의 위치** | Hub (configured_agents 테이블) |
+| **실행 위치** | Workflow Engine (Dagster Op) |
+| **구성 요소** | AI Model + System Prompt + Skills + MCPs |
+| **적합한 작업** | 단일 LLM 호출 기반 작업, 간단한 추론 |
 
-### 4.2. Cloud LLM Agent
+**예시:**
+```yaml
+name: "code-reviewer"
+model: "ollama/qwen2.5-coder:7b"
+system_prompt: "You are a code review assistant..."
+skills: ["code_review", "git_diff"]
+config:
+  temperature: 0.3
+  max_tokens: 4096
+```
+
+### 4.2. Graph Agent (LangGraph)
+
+Workflow Engine에서 직접 정의되는 복잡한 Agent. LangGraph Asset으로 구현.
 
 | 항목 | 설명 |
 |------|------|
-| **역할** | Local LLM으로 처리 불가능한 긴급 작업 처리 |
-| **사용 조건** | Host Agent 개입을 기다릴 수 없는 긴급성 + Local LLM 한계 |
-| **제한** | 비용 발생으로 인해 제한적 사용 |
+| **정의 위치** | Workflow Engine (Dagster Asset/Op) |
+| **실행 위치** | Workflow Engine |
+| **구성 요소** | LangGraph Graph + State + Nodes |
+| **적합한 작업** | 멀티스텝 추론, ReAct, Plan-and-Execute |
 
-> [!CAUTION]
-> Cloud LLM Agent는 긴급 + Local LLM 불가 조건을 모두 만족할 때만 사용.
-> 그 외에는 Task Manager에 기입하여 Host Agent 판단을 기다림.
+**예시:**
+```
+graph LR
+    A[Start] --> B{분석}
+    B --> C[계획 수립]
+    C --> D[실행]
+    D --> E{검증}
+    E -->|실패| C
+    E -->|성공| F[End]
+```
+
+> [!NOTE]
+> Graph Agent는 Workflow Engine에서 LangGraph Asset으로 개발.
+> Hub는 Graph Agent의 메타데이터(이름, 설명)만 참조용으로 관리.
+
+### 4.3. Registry 관리 (Hub)
+
+Hub에서 관리하는 Registry 목록:
+
+| Registry | 설명 |
+|----------|------|
+| **AIModelRegistry** | 사용 가능한 AI 모델 목록 (Ollama, OpenAI 등) |
+| **SkillRegistry** | Agent에 주입 가능한 Skill 카탈로그 |
+| **MCPRegistry** | Agent에 연결 가능한 MCP Server 목록 |
+| **ConfiguredAgents** | Model + Skill/MCP 조합으로 정의된 Agent |
+
+### Agent 실행 흐름
+
+```
+1. Workflow Engine이 Hub API에서 Agent 설정 조회
+2. Configured Agent: 설정 기반으로 LangChain Agent 인스턴스화
+3. Graph Agent: Dagster Asset에서 직접 LangGraph 실행
+4. 실행 결과를 Hub의 agent_executions 테이블에 기록
+```
 
 ---
 
