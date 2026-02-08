@@ -9,9 +9,9 @@
 # - pyproject.toml의 dagster 버전도 일치시켜야 합니다.
 # =============================================================================
 
-ARG DAGSTER_VERSION=1.9.14
+ARG DAGSTER_VERSION=1.12.14
 
-FROM python:3.12-slim
+FROM python:3.13-slim
 
 ARG DAGSTER_VERSION
 

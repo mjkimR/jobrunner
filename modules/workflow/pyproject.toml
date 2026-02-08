@@ -5,9 +5,9 @@ description = "JobRunner Workflow"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "dagster==1.9.14",
-    "dagster-postgres==0.25.14",
-    "dagster-webserver==1.9.14",
+    "dagster>=1.12.14",
+    "dagster-webserver>=1.12.14",
+    "dagster-postgres>=0.28.14",
 ]
 
 [dependency-groups]
