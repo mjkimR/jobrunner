@@ -5,7 +5,10 @@
       "label": "hub-ui: dev",
       "type": "process",
       "command": "npm",
-      "args": ["run", "dev"],
+      "args": [
+        "run",
+        "dev"
+      ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -13,6 +16,14 @@
       "problemMatcher": [
         {
           "owner": "vite",
+          "pattern": {
+            "regexp": "^([^\\s].*):(\\d+):(\\d+):\\s+(error|warning):\\s+(.*)$",
+            "file": 1,
+            "line": 2,
+            "column": 3,
+            "severity": 4,
+            "message": 5
+          },
           "background": {
             "activeOnStart": true,
             "beginsPattern": "^\\s*VITE v",

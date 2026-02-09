@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { TaskService } from '../../generated/api'
+import { TaskService } from '@/generated/api'
 import { queryKeys } from '../queryKeys'
 
 export function useTasksQuery(params: { offset?: number; limit?: number } = {}) {

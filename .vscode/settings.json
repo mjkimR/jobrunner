@@ -1,10 +1,14 @@
 {
     "python-envs.pythonProjects": [],
     "python.analysis.extraPaths": [
-        "./src"
+        "./modules/agent_tools",
+        "./modules/hub",
+        "./modules/workflow"
     ],
     "python.testing.pytestArgs": [
-        "./src/tests"
+        // "./modules/agent_tools/tests",
+        "./modules/hub/tests",
+        // "./modules/workflow/tests"
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,

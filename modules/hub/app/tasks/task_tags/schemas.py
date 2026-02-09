@@ -3,9 +3,7 @@
 Pydantic schemas for TaskTag CRUD operations.
 """
 
-import datetime
-
-from app_base.base.schemas.mixin import UUIDSchemaMixin
+from app_base.base.schemas.mixin import TimestampSchemaMixin, UUIDSchemaMixin
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -35,12 +33,11 @@ class TaskTagUpdate(BaseModel):
     )
 
 
-class TaskTagRead(UUIDSchemaMixin, BaseModel):
+class TaskTagRead(UUIDSchemaMixin, TimestampSchemaMixin, BaseModel):
     """Schema for reading TaskTag data."""
 
     name: str = Field(..., description="Tag name")
     description: str | None = Field(default=None, description="Tag description")
     color: str | None = Field(default=None, description="Hex color code")
-    created_at: datetime.datetime = Field(..., description="Creation timestamp")
 
     model_config = ConfigDict(from_attributes=True)

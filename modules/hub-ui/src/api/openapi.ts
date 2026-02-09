@@ -1,4 +1,4 @@
-import { OpenAPI } from '../generated/api'
+import { OpenAPI } from '@/generated/api'
 import { env } from '../config/env'
 
 export function configureOpenApiClient() {

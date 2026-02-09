@@ -5,8 +5,16 @@ Pydantic schemas for Task CRUD operations.
 
 import datetime
 import uuid
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
+from app.tasks.tasks.enum import (
+    TaskComplexity,
+    TaskPriority,
+    TaskQueue,
+    TaskSource,
+    TaskStatus,
+    TaskUrgency,
+)
 from app_base.base.schemas.mixin import TimestampSchemaMixin, UUIDSchemaMixin
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -20,21 +28,13 @@ class TaskCreate(BaseModel):
 
     title: str = Field(..., max_length=255, description="Task title")
     description: str | None = Field(default=None, description="Task description")
-    status: Literal["pending", "in_progress", "review", "done", "cancelled"] = Field(
-        default="pending", description="Task status"
-    )
-    priority: Literal["low", "normal", "high", "critical"] = Field(default="normal", description="Priority level")
-    urgency: Literal["low", "normal", "high", "critical"] = Field(
-        default="normal", description="Urgency level (for routing)"
-    )
-    complexity: Literal["simple", "moderate", "complex"] = Field(
-        default="simple", description="Complexity level (for routing)"
-    )
-    queue: str = Field(default="default", max_length=100, description="Target queue")
+    status: TaskStatus = Field(default=TaskStatus.PENDING, description="Task status")
+    priority: TaskPriority = Field(default=TaskPriority.NORMAL, description="Priority level")
+    urgency: TaskUrgency = Field(default=TaskUrgency.NORMAL, description="Urgency level (for routing)")
+    complexity: TaskComplexity = Field(default=TaskComplexity.SIMPLE, description="Complexity level (for routing)")
+    queue: TaskQueue = Field(default=TaskQueue.DEFAULT, description="Target queue")
     parent_task_id: uuid.UUID | None = Field(default=None, description="Parent task ID for subtasks")
-    source: Literal["user", "host_agent", "gateway", "workflow", "system"] = Field(
-        default="user", description="Task creation source"
-    )
+    source: TaskSource = Field(default=TaskSource.USER, description="Task creation source")
     external_ref: str | None = Field(
         default=None, max_length=255, description="External reference (e.g., GitHub Issue URL)"
     )
@@ -53,17 +53,13 @@ class TaskUpdate(BaseModel):
 
     title: str | None = Field(default=None, max_length=255, description="Task title")
     description: str | None = Field(default=None, description="Task description")
-    status: Literal["pending", "in_progress", "review", "done", "cancelled"] | None = Field(
-        default=None, description="Task status"
-    )
-    priority: Literal["low", "normal", "high", "critical"] | None = Field(default=None, description="Priority level")
-    urgency: Literal["low", "normal", "high", "critical"] | None = Field(default=None, description="Urgency level")
-    complexity: Literal["simple", "moderate", "complex"] | None = Field(default=None, description="Complexity level")
-    queue: str | None = Field(default=None, max_length=100, description="Target queue")
+    status: TaskStatus | None = Field(default=None, description="Task status")
+    priority: TaskPriority | None = Field(default=None, description="Priority level")
+    urgency: TaskUrgency | None = Field(default=None, description="Urgency level")
+    complexity: TaskComplexity | None = Field(default=None, description="Complexity level")
+    queue: TaskQueue | None = Field(default=None, description="Target queue")
     parent_task_id: uuid.UUID | None = Field(default=None, description="Parent task ID")
-    source: Literal["user", "host_agent", "gateway", "workflow", "system"] | None = Field(
-        default=None, description="Task creation source"
-    )
+    source: TaskSource | None = Field(default=None, description="Task creation source")
     external_ref: str | None = Field(default=None, max_length=255, description="External reference")
     due_date: datetime.datetime | None = Field(default=None, description="Due date")
     completed_at: datetime.datetime | None = Field(default=None, description="Completion time")
@@ -82,13 +78,13 @@ class TaskRead(UUIDSchemaMixin, TimestampSchemaMixin, BaseModel):
 
     title: str = Field(..., description="Task title")
     description: str | None = Field(default=None, description="Task description")
-    status: str = Field(..., description="Task status")
-    priority: str = Field(..., description="Priority level")
-    urgency: str = Field(..., description="Urgency level")
-    complexity: str = Field(..., description="Complexity level")
-    queue: str = Field(..., description="Target queue")
+    status: TaskStatus = Field(..., description="Task status")
+    priority: TaskPriority = Field(..., description="Priority level")
+    urgency: TaskUrgency = Field(..., description="Urgency level")
+    complexity: TaskComplexity = Field(..., description="Complexity level")
+    queue: TaskQueue = Field(..., description="Target queue")
     parent_task_id: uuid.UUID | None = Field(default=None, description="Parent task ID")
-    source: str = Field(..., description="Task creation source")
+    source: TaskSource = Field(..., description="Task creation source")
     external_ref: str | None = Field(default=None, description="External reference")
     due_date: datetime.datetime | None = Field(default=None, description="Due date")
     completed_at: datetime.datetime | None = Field(default=None, description="Completion time")

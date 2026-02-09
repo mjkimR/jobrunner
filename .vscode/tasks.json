@@ -1,0 +1,46 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "hub-ui: dev",
+            "type": "npm",
+            "script": "dev",
+            "path": "modules/hub-ui",
+            "isBackground": true,
+            "problemMatcher": [
+                {
+                    "owner": "vite",
+                    "pattern": {
+                        "regexp": "^([^\\s].*):(\\d+):(\\d+):\\s+(error|warning):\\s+(.*)$",
+                        "file": 1,
+                        "line": 2,
+                        "column": 3,
+                        "severity": 4,
+                        "message": 5
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": "^\\s*VITE v",
+                        "endsPattern": "Local:\\s+https?://"
+                    }
+                }
+            ],
+            "presentation": {
+                "group": "build",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "hub: migrate",
+            "type": "shell",
+            "command": "uv run alembic upgrade head",
+            "options": {
+                "cwd": "${workspaceFolder}/modules/hub"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        }
+    ]
+}
