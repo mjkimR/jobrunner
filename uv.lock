@@ -199,7 +199,7 @@ wheels = [
 [[package]]
 name = "app-base"
 version = "0.1.0"
-source = { git = "https://github.com/mjkimR/app-common.git?subdirectory=app-base&rev=main#a531329837fb04877192b765febebe4c2bd5f423" }
+source = { git = "https://github.com/mjkimR/app-common.git?subdirectory=app-base&rev=main#911a048ee65af822832eb948c2c8fd7874e5492b" }
 dependencies = [
     { name = "aiofiles" },
     { name = "aiosqlite" },
@@ -239,7 +239,7 @@ s3 = [
 [[package]]
 name = "app-tools"
 version = "0.1.0"
-source = { git = "https://github.com/mjkimR/app-common.git?subdirectory=app-tools&rev=main#a531329837fb04877192b765febebe4c2bd5f423" }
+source = { git = "https://github.com/mjkimR/app-common.git?subdirectory=app-tools&rev=main#911a048ee65af822832eb948c2c8fd7874e5492b" }
 dependencies = [
     { name = "click" },
     { name = "questionary" },

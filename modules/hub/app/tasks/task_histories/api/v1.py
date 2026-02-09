@@ -15,7 +15,7 @@ from app_base.base.schemas.delete_resp import DeleteResponse
 from app_base.base.schemas.paginated import PaginatedList
 from fastapi import APIRouter, Depends, status
 
-router = APIRouter(prefix="/task_histories", tags=["TaskHistories"], dependencies=[])
+router = APIRouter(prefix="/task_histories", tags=["TaskHistorie"], dependencies=[])
 
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=TaskHistoryRead)

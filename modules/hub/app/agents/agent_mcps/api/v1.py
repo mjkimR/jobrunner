@@ -15,7 +15,7 @@ from app_base.base.schemas.delete_resp import DeleteResponse
 from app_base.base.schemas.paginated import PaginatedList
 from fastapi import APIRouter, Depends, status
 
-router = APIRouter(prefix="/agent_mcps", tags=["AgentMCPs"], dependencies=[])
+router = APIRouter(prefix="/agent_mcps", tags=["AgentMCP"], dependencies=[])
 
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=AgentMCPRead)

@@ -102,6 +102,3 @@ class TaskReadWithRelations(TaskRead):
 
     subtasks: list[TaskRead] = Field(default_factory=list, description="Subtasks")
     tags: list["TaskTagRead"] = Field(default_factory=list, description="Associated tags")
-
-
-TaskReadWithRelations.model_rebuild()
