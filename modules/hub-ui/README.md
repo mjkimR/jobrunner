@@ -1,70 +1,76 @@
 # hub-ui
 
-Vite + React + TypeScript UI.
+JobRunner Hub의 프론트엔드 UI 모듈입니다.
 
-- Routing: `react-router-dom`
-- Server state: TanStack Query
-- UI/global state: Zustand (필요할 때만)
-- API client: FastAPI OpenAPI → `openapi-typescript-codegen`로 생성
+## 기술 스택 (Tech Stack)
 
-## 전제
+이 프로젝트는 다음의 주요 기술들을 사용합니다:
 
-- Node.js 22.12+ 권장 (Vite 7 요구사항)
-- FastAPI 백엔드 실행 중 (기본: `http://localhost:8389`)
+- **Framework**: [React](https://react.dev/) (v19)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Build Tool**: [Vite](https://vitejs.dev/)
+- **State Management**: [Zustand](https://github.com/pmndrs/zustand)
+- **Routing**: [React Router](https://reactrouter.com/) (v7)
+- **Data Fetching**: [TanStack Query](https://tanstack.com/query/latest) (React Query)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) (v4)
+- **UI Components**: [shadcn/ui](https://ui.shadcn.com/) (UI Component Library)
+- **API Client**: [openapi-typescript-codegen](https://github.com/ferdikoomen/openapi-typescript-codegen) (OpenAPI 기반 클라이언트 생성)
 
-## 빠른 시작
+## 디렉토리 구조 (Directory Structure)
+
+```
+hub-ui/src/
+├── api/                 # 커스텀 API 유틸리티 및 훅
+├── app/                 # 앱 전역 설정 및 프로바이더
+├── assets/              # 정적 에셋 (이미지, 폰트 등)
+├── components/          # 공통 UI 컴포넌트
+│   └── ui/              # shadcn/ui 컴포넌트 모음
+├── config/              # 앱 설정 (상수, 환경변수 래퍼 등)
+├── generated/           # 자동 생성된 코드
+│   └── api/             # OpenAPI 기반 API 클라이언트
+├── lib/                 # 외부 라이브러리 설정 및 유틸리티 (utils.ts 등)
+├── stores/              # 전역 상태 관리 (Zustand)
+├── utils/               # 일반 유틸리티 함수
+├── views/               # 페이지/뷰 컴포넌트 (라우트 단위)
+├── App.tsx              # 메인 앱 컴포넌트 및 라우팅 설정
+└── main.tsx             # 앱 진입점 (Entry Point)
+```
+
+## 시작하기 (Getting Started)
+
+### 의존성 설치 (Install Dependencies)
 
 ```bash
-cd modules/hub-ui
 npm install
+```
+
+### 개발 서버 실행 (Run Development Server)
+
+```bash
 npm run dev
 ```
 
-## 백엔드 URL 설정
+### API 클라이언트 생성 (Generate API Client)
 
-환경변수 `VITE_API_BASE_URL`을 사용합니다.
-
-```bash
-cd modules/hub-ui
-cp .env.example .env
-```
-
-`.env` 예시:
-
-```dotenv
-VITE_API_BASE_URL=http://localhost:8389
-```
-
-## OpenAPI client 생성
-
-아래 명령은 OpenAPI 스펙을 다운로드한 다음 `src/generated/api`에 클라이언트를 생성합니다.
+백엔드 서버(JobRunner Hub)가 실행 중이어야 합니다 (`http://localhost:8389` 또는 `VITE_API_BASE_URL` 환경변수 참조).
 
 ```bash
-cd modules/hub-ui
 npm run gen:api
 ```
 
-## 생성한 client가 실제로 잘 붙었는지 확인(스모크 테스트)
-
-1) FastAPI를 8389 포트로 실행
-2) UI 실행
+### 빌드 (Build)
 
 ```bash
-cd modules/hub-ui
-npm run dev
+npm run build
 ```
 
-3) Vite가 출력하는 URL(보통 `http://localhost:5173`)로 접속
+### 린트 (Lint)
 
-Home 화면에서 `GET /api/v1/tasks` 응답 JSON이 표시되면 성공입니다.
+```bash
+npm run lint
+```
 
-- `Refresh` 버튼: TanStack Query 캐시 invalidate → refetch
-- React Query Devtools: 포함되어 있습니다(화면 하단에 토글)
+## 프로젝트 설정 (Project Settings)
 
-## 트러블슈팅
-
-### CORS 에러
-
-브라우저 콘솔에 CORS 에러가 뜨면 FastAPI CORS 설정에서 Vite dev origin을 허용하세요.
-
-- `http://localhost:5173`
+- **Alias**: `@`는 `src` 디렉토리를 가리킵니다. (설정: `vite.config.ts`, `tsconfig.app.json`)
+- **Tailwind CSS**: v4 버전이 적용되어 있으며, `vite.config.ts` 및 CSS 파일에서 설정됩니다.
