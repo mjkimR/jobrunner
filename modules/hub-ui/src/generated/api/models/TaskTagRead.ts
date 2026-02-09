@@ -6,6 +6,8 @@
  * Schema for reading TaskTag data.
  */
 export type TaskTagRead = {
+    created_at: string;
+    updated_at: string;
     id: string;
     /**
      * Tag name
@@ -19,9 +21,5 @@ export type TaskTagRead = {
      * Hex color code
      */
     color?: (string | null);
-    /**
-     * Creation timestamp
-     */
-    created_at: string;
 };
 

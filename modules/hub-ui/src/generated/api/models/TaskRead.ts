@@ -2,6 +2,12 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { TaskComplexity } from './TaskComplexity';
+import type { TaskPriority } from './TaskPriority';
+import type { TaskQueue } from './TaskQueue';
+import type { TaskSource } from './TaskSource';
+import type { TaskStatus } from './TaskStatus';
+import type { TaskUrgency } from './TaskUrgency';
 /**
  * Schema for reading Task data.
  */
@@ -20,23 +26,23 @@ export type TaskRead = {
     /**
      * Task status
      */
-    status: string;
+    status: TaskStatus;
     /**
      * Priority level
      */
-    priority: string;
+    priority: TaskPriority;
     /**
      * Urgency level
      */
-    urgency: string;
+    urgency: TaskUrgency;
     /**
      * Complexity level
      */
-    complexity: string;
+    complexity: TaskComplexity;
     /**
      * Target queue
      */
-    queue: string;
+    queue: TaskQueue;
     /**
      * Parent task ID
      */
@@ -44,7 +50,7 @@ export type TaskRead = {
     /**
      * Task creation source
      */
-    source: string;
+    source: TaskSource;
     /**
      * External reference
      */

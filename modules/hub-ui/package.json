@@ -8,8 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "clean:api": "rm -rf src/generated/api",
-    "gen:api": "npm run clean:api && curl -sS ${VITE_API_BASE_URL:-http://localhost:8389}/openapi.json -o /tmp/hub_openapi.json && openapi --input /tmp/hub_openapi.json --output src/generated/api --client fetch --useUnionTypes --exportCore true --exportServices true --exportModels true"
+    "clean:api": "node --input-type=module -e \"import {rmSync} from 'fs'; rmSync('src/generated/api', {recursive:true, force:true})\"",
+    "gen:api": "node scripts/gen-api.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

@@ -2,6 +2,12 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { TaskComplexity } from './TaskComplexity';
+import type { TaskPriority } from './TaskPriority';
+import type { TaskQueue } from './TaskQueue';
+import type { TaskSource } from './TaskSource';
+import type { TaskStatus } from './TaskStatus';
+import type { TaskUrgency } from './TaskUrgency';
 /**
  * Schema for updating an existing Task.
  */
@@ -17,23 +23,23 @@ export type TaskUpdate = {
     /**
      * Task status
      */
-    status?: ('pending' | 'in_progress' | 'review' | 'done' | 'cancelled' | null);
+    status?: (TaskStatus | null);
     /**
      * Priority level
      */
-    priority?: ('low' | 'normal' | 'high' | 'critical' | null);
+    priority?: (TaskPriority | null);
     /**
      * Urgency level
      */
-    urgency?: ('low' | 'normal' | 'high' | 'critical' | null);
+    urgency?: (TaskUrgency | null);
     /**
      * Complexity level
      */
-    complexity?: ('simple' | 'moderate' | 'complex' | null);
+    complexity?: (TaskComplexity | null);
     /**
      * Target queue
      */
-    queue?: (string | null);
+    queue?: (TaskQueue | null);
     /**
      * Parent task ID
      */
@@ -41,7 +47,7 @@ export type TaskUpdate = {
     /**
      * Task creation source
      */
-    source?: ('user' | 'host_agent' | 'gateway' | 'workflow' | 'system' | null);
+    source?: (TaskSource | null);
     /**
      * External reference
      */

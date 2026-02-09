@@ -49,9 +49,9 @@ export default function TaskForm({ task, onSuccess }: TaskFormProps) {
             title: '',
             description: '',
             status: 'pending',
-            priority: 'medium',
-            urgency: 'medium',
-            complexity: 'medium',
+            priority: 'normal',
+            urgency: 'normal',
+            complexity: 'moderate',
             queue: 'default',
         },
     });
@@ -72,9 +72,9 @@ export default function TaskForm({ task, onSuccess }: TaskFormProps) {
                 title: '',
                 description: '',
                 status: 'pending',
-                priority: 'medium',
-                urgency: 'medium',
-                complexity: 'medium',
+                priority: 'normal',
+                urgency: 'normal',
+                complexity: 'moderate',
                 queue: 'default',
             });
         }
@@ -143,8 +143,9 @@ export default function TaskForm({ task, onSuccess }: TaskFormProps) {
                                     <SelectContent>
                                         <SelectItem value="pending">Pending</SelectItem>
                                         <SelectItem value="in_progress">In Progress</SelectItem>
-                                        <SelectItem value="completed">Completed</SelectItem>
-                                        <SelectItem value="failed">Failed</SelectItem>
+                                        <SelectItem value="review">Review</SelectItem>
+                                        <SelectItem value="done">Done</SelectItem>
+                                        <SelectItem value="cancelled">Cancelled</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -165,7 +166,7 @@ export default function TaskForm({ task, onSuccess }: TaskFormProps) {
                                     </FormControl>
                                     <SelectContent>
                                         <SelectItem value="low">Low</SelectItem>
-                                        <SelectItem value="medium">Medium</SelectItem>
+                                        <SelectItem value="normal">Normal</SelectItem>
                                         <SelectItem value="high">High</SelectItem>
                                         <SelectItem value="critical">Critical</SelectItem>
                                     </SelectContent>
@@ -191,7 +192,7 @@ export default function TaskForm({ task, onSuccess }: TaskFormProps) {
                                     </FormControl>
                                     <SelectContent>
                                         <SelectItem value="low">Low</SelectItem>
-                                        <SelectItem value="medium">Medium</SelectItem>
+                                        <SelectItem value="normal">Normal</SelectItem>
                                         <SelectItem value="high">High</SelectItem>
                                         <SelectItem value="critical">Critical</SelectItem>
                                     </SelectContent>
@@ -213,10 +214,9 @@ export default function TaskForm({ task, onSuccess }: TaskFormProps) {
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                        <SelectItem value="low">Low</SelectItem>
-                                        <SelectItem value="medium">Medium</SelectItem>
-                                        <SelectItem value="high">High</SelectItem>
-                                        <SelectItem value="critical">Critical</SelectItem>
+                                        <SelectItem value="simple">Simple</SelectItem>
+                                        <SelectItem value="moderate">Moderate</SelectItem>
+                                        <SelectItem value="complex">Complex</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -231,9 +231,19 @@ export default function TaskForm({ task, onSuccess }: TaskFormProps) {
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Queue</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Queue name" {...field} />
-                            </FormControl>
+                            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select queue" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="default">Default</SelectItem>
+                                    <SelectItem value="host-agent">Host Agent</SelectItem>
+                                    <SelectItem value="local-agent">Local Agent</SelectItem>
+                                    <SelectItem value="workflow">Workflow</SelectItem>
+                                </SelectContent>
+                            </Select>
                             <FormMessage />
                         </FormItem>
                     )}

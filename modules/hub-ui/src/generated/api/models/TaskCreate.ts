@@ -2,6 +2,12 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { TaskComplexity } from './TaskComplexity';
+import type { TaskPriority } from './TaskPriority';
+import type { TaskQueue } from './TaskQueue';
+import type { TaskSource } from './TaskSource';
+import type { TaskStatus } from './TaskStatus';
+import type { TaskUrgency } from './TaskUrgency';
 /**
  * Schema for creating a new Task.
  */
@@ -17,23 +23,23 @@ export type TaskCreate = {
     /**
      * Task status
      */
-    status?: 'pending' | 'in_progress' | 'review' | 'done' | 'cancelled';
+    status?: TaskStatus;
     /**
      * Priority level
      */
-    priority?: 'low' | 'normal' | 'high' | 'critical';
+    priority?: TaskPriority;
     /**
      * Urgency level (for routing)
      */
-    urgency?: 'low' | 'normal' | 'high' | 'critical';
+    urgency?: TaskUrgency;
     /**
      * Complexity level (for routing)
      */
-    complexity?: 'simple' | 'moderate' | 'complex';
+    complexity?: TaskComplexity;
     /**
      * Target queue
      */
-    queue?: string;
+    queue?: TaskQueue;
     /**
      * Parent task ID for subtasks
      */
@@ -41,7 +47,7 @@ export type TaskCreate = {
     /**
      * Task creation source
      */
-    source?: 'user' | 'host_agent' | 'gateway' | 'workflow' | 'system';
+    source?: TaskSource;
     /**
      * External reference (e.g., GitHub Issue URL)
      */
