@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { TaskHistorieService } from '@/generated/api/services/TaskHistorieService';
+import { useQueryClient } from '@tanstack/react-query';
+import { useTaskHistoryListQuery, useDeleteTaskHistoryMutation } from '@/api/queries/taskHistory';
 import { DataTable } from '@/components/ui/data-table';
 import { getHistoryColumns } from './columns';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import type { TaskHistoryRead } from '@/generated/api/models/TaskHistoryRead';
 import TaskHistoryForm from './TaskHistoryForm';
 import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus } from 'lucide-react';
+import { queryKeys } from '@/api/queryKeys';
 
 export default function TaskHistoryList() {
     const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
@@ -16,17 +17,12 @@ export default function TaskHistoryList() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const queryClient = useQueryClient();
 
-    const { data } = useQuery({
-        queryKey: ['task_histories', pagination.pageIndex, pagination.pageSize],
-        queryFn: () => TaskHistorieService.getTaskHistoriesApiV1TaskHistoriesGet(pagination.pageIndex * pagination.pageSize, pagination.pageSize),
+    const { data } = useTaskHistoryListQuery({
+        offset: pagination.pageIndex * pagination.pageSize,
+        limit: pagination.pageSize,
     });
 
-    const deleteMutation = useMutation({
-        mutationFn: (historyId: string) => TaskHistorieService.deleteTaskHistoryApiV1TaskHistoriesTaskHistoryIdDelete(historyId),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['task_histories'] });
-        },
-    });
+    const deleteMutation = useDeleteTaskHistoryMutation();
 
     const handleEdit = (history: TaskHistoryRead) => {
         setSelectedHistory(history);
@@ -64,7 +60,7 @@ export default function TaskHistoryList() {
                             history={selectedHistory}
                             onSuccess={() => {
                                 setIsDialogOpen(false);
-                                queryClient.invalidateQueries({ queryKey: ['task_histories'] });
+                                queryClient.invalidateQueries({ queryKey: queryKeys.taskHistory.all });
                             }}
                         />
                     </DialogContent>

@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { TaskTagService } from '@/generated/api/services/TaskTagService';
+import { useQueryClient } from '@tanstack/react-query';
+import { useTaskTagsQuery, useDeleteTaskTagMutation } from '@/api/queries/taskTags';
 import { DataTable } from '@/components/ui/data-table';
 import { getTagColumns } from './columns';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import type { TaskTagRead } from '@/generated/api/models/TaskTagRead';
 import TaskTagForm from './TaskTagForm';
 import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus } from 'lucide-react';
+import { queryKeys } from '@/api/queryKeys';
 
 export default function TaskTagList() {
     const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
@@ -16,17 +17,12 @@ export default function TaskTagList() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const queryClient = useQueryClient();
 
-    const { data } = useQuery({
-        queryKey: ['task_tags', pagination.pageIndex, pagination.pageSize],
-        queryFn: () => TaskTagService.getTaskTagsApiV1TaskTagsGet(pagination.pageIndex * pagination.pageSize, pagination.pageSize),
+    const { data } = useTaskTagsQuery({
+        offset: pagination.pageIndex * pagination.pageSize,
+        limit: pagination.pageSize,
     });
 
-    const deleteMutation = useMutation({
-        mutationFn: (tagId: string) => TaskTagService.deleteTaskTagApiV1TaskTagsTaskTagIdDelete(tagId),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['task_tags'] });
-        },
-    });
+    const deleteMutation = useDeleteTaskTagMutation();
 
     const handleEdit = (tag: TaskTagRead) => {
         setSelectedTag(tag);
@@ -64,7 +60,7 @@ export default function TaskTagList() {
                             tag={selectedTag}
                             onSuccess={() => {
                                 setIsDialogOpen(false);
-                                queryClient.invalidateQueries({ queryKey: ['task_tags'] });
+                                queryClient.invalidateQueries({ queryKey: queryKeys.taskTags.all });
                             }}
                         />
                     </DialogContent>

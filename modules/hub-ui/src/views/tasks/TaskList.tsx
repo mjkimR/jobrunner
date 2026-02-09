@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { TaskService } from '@/generated/api/services/TaskService';
+import { useQueryClient } from '@tanstack/react-query';
+import { useTasksQuery, useDeleteTaskMutation } from '@/api/queries/tasks';
 import { DataTable } from '@/components/ui/data-table';
 import { getColumns } from './columns';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import type { TaskRead } from '@/generated/api/models/TaskRead';
 import TaskForm from './TaskForm';
 import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus } from 'lucide-react';
+import { queryKeys } from '@/api/queryKeys';
 
 export default function TaskList() {
     const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
@@ -16,17 +17,12 @@ export default function TaskList() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const queryClient = useQueryClient();
 
-    const { data } = useQuery({
-        queryKey: ['tasks', pagination.pageIndex, pagination.pageSize],
-        queryFn: () => TaskService.getTasksApiV1TasksGet(pagination.pageIndex * pagination.pageSize, pagination.pageSize),
+    const { data } = useTasksQuery({
+        offset: pagination.pageIndex * pagination.pageSize,
+        limit: pagination.pageSize,
     });
 
-    const deleteMutation = useMutation({
-        mutationFn: (taskId: string) => TaskService.deleteTaskApiV1TasksTaskIdDelete(taskId),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['tasks'] });
-        },
-    });
+    const deleteMutation = useDeleteTaskMutation();
 
     const handleEdit = (task: TaskRead) => {
         setSelectedTask(task);
@@ -64,7 +60,7 @@ export default function TaskList() {
                             task={selectedTask}
                             onSuccess={() => {
                                 setIsDialogOpen(false);
-                                queryClient.invalidateQueries({ queryKey: ['tasks'] });
+                                queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
                             }}
                         />
                     </DialogContent>

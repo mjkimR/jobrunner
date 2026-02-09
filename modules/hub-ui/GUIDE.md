@@ -30,3 +30,17 @@ OpenAPI Generator가 생성하는 서비스 클래스의 이름이 예상과 다
 ## 3. 폴더 구조 및 네이밍
 - **Views**: 각 기능별 페이지는 `src/views/[feature]/` 아래에 구성했습니다. (예: `tasks`, `tags`, `history`)
 - **Components**: 재사용 가능한 UI 컴포넌트는 `src/components/ui` (shadcn) 또는 `src/components` (커스텀)에 위치합니다.
+- **API**: API 관련 쿼리/뮤테이션 훅은 `src/api/queries/`에 위치합니다.
+
+## 4. API 연동 표준 (TanStack Query)
+
+제너레이트된 API 서비스를 직접 컴포넌트에서 호출하지 않고, `src/api` 폴더에 래핑하여 사용합니다.
+
+### 쿼리 키 중앙 관리 (`src/api/queryKeys.ts`)
+- 모든 React Query의 키는 `queryKeys` 객체를 통해 관리합니다. 하드코딩된 문자열 배열 사용을 지양합니다.
+- 예: `queryKey: queryKeys.tasks.list({ offset, limit })`
+
+### 커스텀 훅 사용 (`src/api/queries/*.ts`)
+- 제너레이트된 서비스(`TaskService` 등)는 `src/api/queries` 하위의 커스텀 훅(`useTasksQuery` 등)으로 한 번 감싸서 사용합니다.
+- 뮤테이션(`Mutation`) 역시 커스텀 훅으로 정의하여 사용합니다.
+- 이를 통해 캐시 무효화(`invalidateQueries`) 로직을 중앙에서 관리하고, 컴포넌트 코드를 간결하게 유지합니다.
