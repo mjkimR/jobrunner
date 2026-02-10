@@ -30,5 +30,5 @@ class ChatMessage(Base, UUIDMixin, TimestampMixin):
     agent_execution_id: Mapped[UUID | None] = mapped_column(ForeignKey("agent_executions.id"), nullable=True)
 
     # Relationships
-    conversation: Mapped["Conversation"] = relationship("Conversation", back_populates="chat_messages")
+    conversation: Mapped["Conversation"] = relationship("Conversation", back_populates="messages")
     agent_execution: Mapped["AgentExecution"] = relationship("AgentExecution")

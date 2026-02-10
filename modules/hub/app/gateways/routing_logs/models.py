@@ -22,7 +22,7 @@ class RoutingLog(Base, UUIDMixin, TimestampMixin):
 
     __tablename__ = "routing_logs"
 
-    message_id: Mapped[UUID] = mapped_column(ForeignKey("messages.id", ondelete="CASCADE"), nullable=False)
+    message_id: Mapped[UUID] = mapped_column(ForeignKey("chat_messages.id", ondelete="CASCADE"), nullable=False)
     routing_result: Mapped[str] = mapped_column(String(50), nullable=False)
     confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
     reasoning: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -30,6 +30,6 @@ class RoutingLog(Base, UUIDMixin, TimestampMixin):
     target_agent_id: Mapped[UUID | None] = mapped_column(ForeignKey("configured_agents.id"), nullable=True)
 
     # Relationships
-    message: Mapped["ChatMessage"] = relationship("Message")
+    message: Mapped["ChatMessage"] = relationship("ChatMessage")
     target_task: Mapped["Task"] = relationship("Task")
     target_agent: Mapped["ConfiguredAgent"] = relationship("ConfiguredAgent")
