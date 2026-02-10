@@ -38,14 +38,16 @@ def create_app():
     async def root():
         return RedirectResponse(url="/docs")
 
-    # Request ID middleware
-    middlewares.request_id_middleware.add_middleware(app)
-    # Security middleware
-    middlewares.cors_middleware.add_middleware(app)
-    middlewares.security_header.add_middleware(app)
     # Others
     middlewares.timeout_middleware.add_middleware(app)
     middlewares.query_counter.add_middleware(app)
+
+    # Security middleware
+    middlewares.security_header.add_middleware(app)
+    middlewares.cors_middleware.add_middleware(app)
+
+    # Request ID middleware (Last one to ensure all logs have request ID)
+    middlewares.request_id_middleware.add_middleware(app)
 
     app.include_router(router)
 
