@@ -28,6 +28,14 @@ async def create_ai_model_catalog(
     return await use_case.execute(ai_model_catalog_in)
 
 
+@router.get("", response_model=PaginatedList[AIModelCatalogRead])
+async def get_ai_model_catalogs(
+    use_case: Annotated[GetMultiAIModelCatalogUseCase, Depends()],
+    pagination: PaginationParam,
+):
+    return await use_case.execute(**pagination)
+
+
 @router.post("/upload_yaml", status_code=status.HTTP_201_CREATED, response_model=AIModelCatalogRead)
 async def upload_yaml_ai_model_catalog(
     use_case: Annotated[CreateAIModelCatalogUseCase, Depends()],
@@ -52,12 +60,24 @@ async def download_yaml_ai_model_catalog(
     return StreamingResponse(yaml.dump(ai_model_catalog.data), media_type="text/yaml")
 
 
-@router.get("", response_model=PaginatedList[AIModelCatalogRead])
-async def get_ai_model_catalogs(
-    use_case: Annotated[GetMultiAIModelCatalogUseCase, Depends()],
-    pagination: PaginationParam,
+@router.get("/download_yaml/latest", response_class=StreamingResponse)
+async def download_yaml_latest_ai_model_catalog(
+    use_case: Annotated[GetAIModelCatalogLatestUseCase, Depends()],
 ):
-    return await use_case.execute(**pagination)
+    ai_model_catalog = await use_case.execute()
+    if not ai_model_catalog:
+        raise NotFoundException()
+    return StreamingResponse(yaml.dump(ai_model_catalog.data), media_type="text/yaml")
+
+
+@router.get("/latest", response_model=AIModelCatalogRead)
+async def get_latest_ai_model_catalog(
+    use_case: Annotated[GetAIModelCatalogLatestUseCase, Depends()],
+):
+    ai_model_catalog = await use_case.execute()
+    if not ai_model_catalog:
+        raise NotFoundException()
+    return ai_model_catalog
 
 
 @router.get("/{ai_model_catalog_id}", response_model=AIModelCatalogRead)
@@ -66,16 +86,6 @@ async def get_ai_model_catalog(
     ai_model_catalog_id: UUID,
 ):
     ai_model_catalog = await use_case.execute(ai_model_catalog_id)
-    if not ai_model_catalog:
-        raise NotFoundException()
-    return ai_model_catalog
-
-
-@router.get("/latest", response_model=AIModelCatalogRead)
-async def get_latest_ai_model_catalog(
-    use_case: Annotated[GetAIModelCatalogLatestUseCase, Depends()],
-):
-    ai_model_catalog = await use_case.execute()
     if not ai_model_catalog:
         raise NotFoundException()
     return ai_model_catalog

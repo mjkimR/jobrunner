@@ -3,9 +3,7 @@ from typing import Annotated
 from app.agents.agent_executions.api.v1 import router as v1_agent_executions_router
 from app.agents.agent_mcps.api.v1 import router as v1_agent_mcps_router
 from app.agents.agent_skills.api.v1 import router as v1_agent_skills_router
-from app.agents.ai_model_aliases.api.v1 import router as v1_ai_model_aliases_router
 from app.agents.ai_model_catalogs.api.v1 import router as v1_ai_models_router
-from app.agents.ai_model_groups.api.v1 import router as v1_ai_model_groups_router
 from app.agents.configured_agents.api.v1 import router as v1_configured_agents_router
 from app.gateways.conversations.api.v1 import router as v1_conversations_router
 from app.gateways.routing_logs.api.v1 import router as v1_routing_logs_router
@@ -45,8 +43,6 @@ v1_router.include_router(v1_tasks_router)
 v1_router.include_router(v1_task_tags_router)
 v1_router.include_router(v1_task_histories_router)
 v1_router.include_router(v1_ai_models_router)
-v1_router.include_router(v1_ai_model_aliases_router)
-v1_router.include_router(v1_ai_model_groups_router)
 v1_router.include_router(v1_configured_agents_router)
 v1_router.include_router(v1_agent_skills_router)
 v1_router.include_router(v1_agent_mcps_router)

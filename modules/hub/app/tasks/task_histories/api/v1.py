@@ -16,7 +16,7 @@ from app_base.base.schemas.delete_resp import DeleteResponse
 from app_base.base.schemas.paginated import PaginatedList
 from fastapi import APIRouter, Depends, status
 
-router = APIRouter(prefix="/workspace/{workspace_id}/task_histories", tags=["TaskHistorie"], dependencies=[])
+router = APIRouter(prefix="/workspace/{workspace_id}/task_histories", tags=["TaskHistories"], dependencies=[])
 
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=TaskHistoryRead)
@@ -45,7 +45,7 @@ async def get_task_history(
     use_case: Annotated[GetTaskHistoryUseCase, Depends()],
     task_history_id: UUID,
 ):
-    context = {"workspace_id": workspace_id}
+    context: TaskHistoryContextKwargs = {"parent_id": workspace_id}
     task_history = await use_case.execute(task_history_id, context=context)
     if not task_history:
         raise NotFoundException()

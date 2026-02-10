@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 055c325322e4
+Revision ID: f749177d11dd
 Revises: 
-Create Date: 2026-02-10 16:56:59.860082
+Create Date: 2026-02-10 21:58:18.499406
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '055c325322e4'
+revision: str = 'f749177d11dd'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -42,22 +42,9 @@ def upgrade() -> None:
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('ai_model_aliases',
-    sa.Column('name', sa.String(), nullable=False),
-    sa.Column('id', sa.UUID(), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_table('ai_model_groups',
-    sa.Column('name', sa.String(), nullable=False),
-    sa.Column('id', sa.UUID(), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_table('ai_models',
-    sa.Column('name', sa.String(), nullable=False),
+    op.create_table('ai_model_catalogs',
+    sa.Column('version', sa.Integer(), nullable=False),
+    sa.Column('data', sa.JSON(), nullable=False),
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
@@ -179,9 +166,7 @@ def downgrade() -> None:
     op.drop_table('routing_logs')
     op.drop_table('conversations')
     op.drop_table('configured_agents')
-    op.drop_table('ai_models')
-    op.drop_table('ai_model_groups')
-    op.drop_table('ai_model_aliases')
+    op.drop_table('ai_model_catalogs')
     op.drop_table('agent_skills')
     op.drop_table('agent_mcps')
     op.drop_table('agent_executions')
