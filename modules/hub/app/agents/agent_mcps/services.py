@@ -14,12 +14,16 @@ from app_base.base.services.base import (
 from fastapi import Depends
 
 
+class AgentMCPContextKwargs(BaseContextKwargs):
+    pass
+
+
 class AgentMCPService(
-    BaseCreateServiceMixin[AgentMCPRepository, AgentMCP, AgentMCPCreate, BaseContextKwargs],
-    BaseGetMultiServiceMixin[AgentMCPRepository, AgentMCP, BaseContextKwargs],
-    BaseGetServiceMixin[AgentMCPRepository, AgentMCP, BaseContextKwargs],
-    BaseUpdateServiceMixin[AgentMCPRepository, AgentMCP, AgentMCPUpdate, BaseContextKwargs],
-    BaseDeleteServiceMixin[AgentMCPRepository, AgentMCP, BaseContextKwargs],
+    BaseCreateServiceMixin[AgentMCPRepository, AgentMCP, AgentMCPCreate, AgentMCPContextKwargs],
+    BaseGetMultiServiceMixin[AgentMCPRepository, AgentMCP, AgentMCPContextKwargs],
+    BaseGetServiceMixin[AgentMCPRepository, AgentMCP, AgentMCPContextKwargs],
+    BaseUpdateServiceMixin[AgentMCPRepository, AgentMCP, AgentMCPUpdate, AgentMCPContextKwargs],
+    BaseDeleteServiceMixin[AgentMCPRepository, AgentMCP, AgentMCPContextKwargs],
 ):
     def __init__(self, repo: Annotated[AgentMCPRepository, Depends()]):
         self._repo = repo
@@ -30,4 +34,4 @@ class AgentMCPService(
 
     @property
     def context_model(self):
-        return BaseContextKwargs
+        return AgentMCPContextKwargs

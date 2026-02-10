@@ -2,7 +2,7 @@ from typing import Annotated
 
 from app.agents.ai_model_aliases.models import AIModelAlias
 from app.agents.ai_model_aliases.schemas import AIModelAliasCreate, AIModelAliasUpdate
-from app.agents.ai_model_aliases.services import AIModelAliasService, BaseContextKwargs
+from app.agents.ai_model_aliases.services import AIModelAliasContextKwargs, AIModelAliasService
 from app_base.base.usecases.crud import (
     BaseCreateUseCase,
     BaseDeleteUseCase,
@@ -13,30 +13,30 @@ from app_base.base.usecases.crud import (
 from fastapi import Depends
 
 
-class GetAIModelAliasUseCase(BaseGetUseCase[AIModelAliasService, AIModelAlias, BaseContextKwargs]):
+class GetAIModelAliasUseCase(BaseGetUseCase[AIModelAliasService, AIModelAlias, AIModelAliasContextKwargs]):
     def __init__(self, service: Annotated[AIModelAliasService, Depends()]) -> None:
         super().__init__(service)
 
 
-class GetMultiAIModelAliasUseCase(BaseGetMultiUseCase[AIModelAliasService, AIModelAlias, BaseContextKwargs]):
+class GetMultiAIModelAliasUseCase(BaseGetMultiUseCase[AIModelAliasService, AIModelAlias, AIModelAliasContextKwargs]):
     def __init__(self, service: Annotated[AIModelAliasService, Depends()]) -> None:
         super().__init__(service)
 
 
 class CreateAIModelAliasUseCase(
-    BaseCreateUseCase[AIModelAliasService, AIModelAlias, AIModelAliasCreate, BaseContextKwargs]
+    BaseCreateUseCase[AIModelAliasService, AIModelAlias, AIModelAliasCreate, AIModelAliasContextKwargs]
 ):
     def __init__(self, service: Annotated[AIModelAliasService, Depends()]) -> None:
         super().__init__(service)
 
 
 class UpdateAIModelAliasUseCase(
-    BaseUpdateUseCase[AIModelAliasService, AIModelAlias, AIModelAliasUpdate, BaseContextKwargs]
+    BaseUpdateUseCase[AIModelAliasService, AIModelAlias, AIModelAliasUpdate, AIModelAliasContextKwargs]
 ):
     def __init__(self, service: Annotated[AIModelAliasService, Depends()]) -> None:
         super().__init__(service)
 
 
-class DeleteAIModelAliasUseCase(BaseDeleteUseCase[AIModelAliasService, AIModelAlias, BaseContextKwargs]):
+class DeleteAIModelAliasUseCase(BaseDeleteUseCase[AIModelAliasService, AIModelAlias, AIModelAliasContextKwargs]):
     def __init__(self, service: Annotated[AIModelAliasService, Depends()]) -> None:
         super().__init__(service)

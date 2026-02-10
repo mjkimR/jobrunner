@@ -2,7 +2,7 @@ from typing import Annotated
 
 from app.tasks.task_histories.models import TaskHistory
 from app.tasks.task_histories.schemas import TaskHistoryCreate, TaskHistoryUpdate
-from app.tasks.task_histories.services import BaseContextKwargs, TaskHistoryService
+from app.tasks.task_histories.services import TaskHistoryContextKwargs, TaskHistoryService
 from app_base.base.usecases.crud import (
     BaseCreateUseCase,
     BaseDeleteUseCase,
@@ -13,30 +13,30 @@ from app_base.base.usecases.crud import (
 from fastapi import Depends
 
 
-class GetTaskHistoryUseCase(BaseGetUseCase[TaskHistoryService, TaskHistory, BaseContextKwargs]):
+class GetTaskHistoryUseCase(BaseGetUseCase[TaskHistoryService, TaskHistory, TaskHistoryContextKwargs]):
     def __init__(self, service: Annotated[TaskHistoryService, Depends()]) -> None:
         super().__init__(service)
 
 
-class GetMultiTaskHistoryUseCase(BaseGetMultiUseCase[TaskHistoryService, TaskHistory, BaseContextKwargs]):
+class GetMultiTaskHistoryUseCase(BaseGetMultiUseCase[TaskHistoryService, TaskHistory, TaskHistoryContextKwargs]):
     def __init__(self, service: Annotated[TaskHistoryService, Depends()]) -> None:
         super().__init__(service)
 
 
 class CreateTaskHistoryUseCase(
-    BaseCreateUseCase[TaskHistoryService, TaskHistory, TaskHistoryCreate, BaseContextKwargs]
+    BaseCreateUseCase[TaskHistoryService, TaskHistory, TaskHistoryCreate, TaskHistoryContextKwargs]
 ):
     def __init__(self, service: Annotated[TaskHistoryService, Depends()]) -> None:
         super().__init__(service)
 
 
 class UpdateTaskHistoryUseCase(
-    BaseUpdateUseCase[TaskHistoryService, TaskHistory, TaskHistoryUpdate, BaseContextKwargs]
+    BaseUpdateUseCase[TaskHistoryService, TaskHistory, TaskHistoryUpdate, TaskHistoryContextKwargs]
 ):
     def __init__(self, service: Annotated[TaskHistoryService, Depends()]) -> None:
         super().__init__(service)
 
 
-class DeleteTaskHistoryUseCase(BaseDeleteUseCase[TaskHistoryService, TaskHistory, BaseContextKwargs]):
+class DeleteTaskHistoryUseCase(BaseDeleteUseCase[TaskHistoryService, TaskHistory, TaskHistoryContextKwargs]):
     def __init__(self, service: Annotated[TaskHistoryService, Depends()]) -> None:
         super().__init__(service)

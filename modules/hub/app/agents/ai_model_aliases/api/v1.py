@@ -1,5 +1,5 @@
-import uuid
 from typing import Annotated
+from uuid import UUID
 
 from app.agents.ai_model_aliases.schemas import AIModelAliasCreate, AIModelAliasRead, AIModelAliasUpdate
 from app.agents.ai_model_aliases.usecases.crud import (
@@ -37,7 +37,7 @@ async def get_ai_model_aliases(
 @router.get("/{ai_model_alias_id}", response_model=AIModelAliasRead)
 async def get_ai_model_alias(
     use_case: Annotated[GetAIModelAliasUseCase, Depends()],
-    ai_model_alias_id: uuid.UUID,
+    ai_model_alias_id: UUID,
 ):
     ai_model_alias = await use_case.execute(ai_model_alias_id)
     if not ai_model_alias:
@@ -48,7 +48,7 @@ async def get_ai_model_alias(
 @router.put("/{ai_model_alias_id}", response_model=AIModelAliasRead)
 async def update_ai_model_alias(
     use_case: Annotated[UpdateAIModelAliasUseCase, Depends()],
-    ai_model_alias_id: uuid.UUID,
+    ai_model_alias_id: UUID,
     ai_model_alias_in: AIModelAliasUpdate,
 ):
     ai_model_alias = await use_case.execute(ai_model_alias_id, ai_model_alias_in)
@@ -60,6 +60,6 @@ async def update_ai_model_alias(
 @router.delete("/{ai_model_alias_id}", response_model=DeleteResponse)
 async def delete_ai_model_alias(
     use_case: Annotated[DeleteAIModelAliasUseCase, Depends()],
-    ai_model_alias_id: uuid.UUID,
+    ai_model_alias_id: UUID,
 ):
     return await use_case.execute(ai_model_alias_id)

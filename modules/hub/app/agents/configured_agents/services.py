@@ -14,12 +14,20 @@ from app_base.base.services.base import (
 from fastapi import Depends
 
 
+class ConfiguredAgentContextKwargs(BaseContextKwargs):
+    pass
+
+
 class ConfiguredAgentService(
-    BaseCreateServiceMixin[ConfiguredAgentRepository, ConfiguredAgent, ConfiguredAgentCreate, BaseContextKwargs],
-    BaseGetMultiServiceMixin[ConfiguredAgentRepository, ConfiguredAgent, BaseContextKwargs],
-    BaseGetServiceMixin[ConfiguredAgentRepository, ConfiguredAgent, BaseContextKwargs],
-    BaseUpdateServiceMixin[ConfiguredAgentRepository, ConfiguredAgent, ConfiguredAgentUpdate, BaseContextKwargs],
-    BaseDeleteServiceMixin[ConfiguredAgentRepository, ConfiguredAgent, BaseContextKwargs],
+    BaseCreateServiceMixin[
+        ConfiguredAgentRepository, ConfiguredAgent, ConfiguredAgentCreate, ConfiguredAgentContextKwargs
+    ],
+    BaseGetMultiServiceMixin[ConfiguredAgentRepository, ConfiguredAgent, ConfiguredAgentContextKwargs],
+    BaseGetServiceMixin[ConfiguredAgentRepository, ConfiguredAgent, ConfiguredAgentContextKwargs],
+    BaseUpdateServiceMixin[
+        ConfiguredAgentRepository, ConfiguredAgent, ConfiguredAgentUpdate, ConfiguredAgentContextKwargs
+    ],
+    BaseDeleteServiceMixin[ConfiguredAgentRepository, ConfiguredAgent, ConfiguredAgentContextKwargs],
 ):
     def __init__(self, repo: Annotated[ConfiguredAgentRepository, Depends()]):
         self._repo = repo
@@ -30,4 +38,4 @@ class ConfiguredAgentService(
 
     @property
     def context_model(self):
-        return BaseContextKwargs
+        return ConfiguredAgentContextKwargs

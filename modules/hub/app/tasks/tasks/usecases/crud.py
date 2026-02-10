@@ -1,5 +1,5 @@
-import uuid
 from typing import Annotated, Optional
+from uuid import UUID
 
 from app.tasks.task_tags.services import TaskTagService
 from app.tasks.tasks.models import Task
@@ -40,9 +40,8 @@ class CreateTaskUseCase(BaseCreateUseCase[TaskService, Task, TaskCreate, TagCont
 
         # Create Task
         db_obj = TaskDbCreate.model_validate(obj_data.model_dump(exclude={"tags"}))
-        db_obj.tags = tag_objects
 
-        return await super()._execute(session, db_obj, context)
+        return await self.service.create(session, db_obj, context=context, tags=tag_objects)
 
 
 class UpdateTaskUseCase(BaseUpdateUseCase[TaskService, Task, TaskUpdate, TagContextKwargs]):
@@ -53,7 +52,7 @@ class UpdateTaskUseCase(BaseUpdateUseCase[TaskService, Task, TaskUpdate, TagCont
         self.tag_service = tag_service
 
     async def _execute(
-        self, session: AsyncSession, obj_id: uuid.UUID, obj_data: TaskUpdate, context: Optional[TagContextKwargs]
+        self, session: AsyncSession, obj_id: UUID, obj_data: TaskUpdate, context: Optional[TagContextKwargs]
     ) -> Task | None:
         # Get or create tag objects
         tags = obj_data.tags
@@ -64,9 +63,7 @@ class UpdateTaskUseCase(BaseUpdateUseCase[TaskService, Task, TaskUpdate, TagCont
 
         # Update Task
         db_obj = TaskDbUpdate.model_validate(obj_data.model_dump(exclude={"tags"}))
-        db_obj.tags = tag_objects
-
-        return await super()._execute(session, obj_id, db_obj, context)
+        return await self.service.update(session, obj_id, db_obj, context, tags=tag_objects)
 
 
 class DeleteTaskUseCase(BaseDeleteUseCase[TaskService, Task, TagContextKwargs]):

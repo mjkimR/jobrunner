@@ -1,5 +1,5 @@
-import uuid
 from typing import Annotated
+from uuid import UUID
 
 from app.agents.ai_model_groups.schemas import AIModelGroupCreate, AIModelGroupRead, AIModelGroupUpdate
 from app.agents.ai_model_groups.usecases.crud import (
@@ -37,7 +37,7 @@ async def get_ai_model_groups(
 @router.get("/{ai_model_group_id}", response_model=AIModelGroupRead)
 async def get_ai_model_group(
     use_case: Annotated[GetAIModelGroupUseCase, Depends()],
-    ai_model_group_id: uuid.UUID,
+    ai_model_group_id: UUID,
 ):
     ai_model_group = await use_case.execute(ai_model_group_id)
     if not ai_model_group:
@@ -48,7 +48,7 @@ async def get_ai_model_group(
 @router.put("/{ai_model_group_id}", response_model=AIModelGroupRead)
 async def update_ai_model_group(
     use_case: Annotated[UpdateAIModelGroupUseCase, Depends()],
-    ai_model_group_id: uuid.UUID,
+    ai_model_group_id: UUID,
     ai_model_group_in: AIModelGroupUpdate,
 ):
     ai_model_group = await use_case.execute(ai_model_group_id, ai_model_group_in)
@@ -60,6 +60,6 @@ async def update_ai_model_group(
 @router.delete("/{ai_model_group_id}", response_model=DeleteResponse)
 async def delete_ai_model_group(
     use_case: Annotated[DeleteAIModelGroupUseCase, Depends()],
-    ai_model_group_id: uuid.UUID,
+    ai_model_group_id: UUID,
 ):
     return await use_case.execute(ai_model_group_id)

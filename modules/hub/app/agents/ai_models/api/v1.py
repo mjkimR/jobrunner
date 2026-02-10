@@ -1,5 +1,5 @@
-import uuid
 from typing import Annotated
+from uuid import UUID
 
 from app.agents.ai_models.schemas import AIModelCreate, AIModelRead, AIModelUpdate
 from app.agents.ai_models.usecases.crud import (
@@ -37,7 +37,7 @@ async def get_ai_models(
 @router.get("/{ai_model_id}", response_model=AIModelRead)
 async def get_ai_model(
     use_case: Annotated[GetAIModelUseCase, Depends()],
-    ai_model_id: uuid.UUID,
+    ai_model_id: UUID,
 ):
     ai_model = await use_case.execute(ai_model_id)
     if not ai_model:
@@ -48,7 +48,7 @@ async def get_ai_model(
 @router.put("/{ai_model_id}", response_model=AIModelRead)
 async def update_ai_model(
     use_case: Annotated[UpdateAIModelUseCase, Depends()],
-    ai_model_id: uuid.UUID,
+    ai_model_id: UUID,
     ai_model_in: AIModelUpdate,
 ):
     ai_model = await use_case.execute(ai_model_id, ai_model_in)
@@ -60,6 +60,6 @@ async def update_ai_model(
 @router.delete("/{ai_model_id}", response_model=DeleteResponse)
 async def delete_ai_model(
     use_case: Annotated[DeleteAIModelUseCase, Depends()],
-    ai_model_id: uuid.UUID,
+    ai_model_id: UUID,
 ):
     return await use_case.execute(ai_model_id)

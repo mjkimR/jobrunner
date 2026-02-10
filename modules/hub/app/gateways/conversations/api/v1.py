@@ -1,5 +1,5 @@
-import uuid
 from typing import Annotated
+from uuid import UUID
 
 from app.gateways.conversations.schemas import ConversationCreate, ConversationRead, ConversationUpdate
 from app.gateways.conversations.usecases.crud import (
@@ -37,7 +37,7 @@ async def get_conversations(
 @router.get("/{conversation_id}", response_model=ConversationRead)
 async def get_conversation(
     use_case: Annotated[GetConversationUseCase, Depends()],
-    conversation_id: uuid.UUID,
+    conversation_id: UUID,
 ):
     conversation = await use_case.execute(conversation_id)
     if not conversation:
@@ -48,7 +48,7 @@ async def get_conversation(
 @router.put("/{conversation_id}", response_model=ConversationRead)
 async def update_conversation(
     use_case: Annotated[UpdateConversationUseCase, Depends()],
-    conversation_id: uuid.UUID,
+    conversation_id: UUID,
     conversation_in: ConversationUpdate,
 ):
     conversation = await use_case.execute(conversation_id, conversation_in)
@@ -60,6 +60,6 @@ async def update_conversation(
 @router.delete("/{conversation_id}", response_model=DeleteResponse)
 async def delete_conversation(
     use_case: Annotated[DeleteConversationUseCase, Depends()],
-    conversation_id: uuid.UUID,
+    conversation_id: UUID,
 ):
     return await use_case.execute(conversation_id)

@@ -14,12 +14,16 @@ from app_base.base.services.base import (
 from fastapi import Depends
 
 
+class AIModelGroupContextKwargs(BaseContextKwargs):
+    pass
+
+
 class AIModelGroupService(
-    BaseCreateServiceMixin[AIModelGroupRepository, AIModelGroup, AIModelGroupCreate, BaseContextKwargs],
-    BaseGetMultiServiceMixin[AIModelGroupRepository, AIModelGroup, BaseContextKwargs],
-    BaseGetServiceMixin[AIModelGroupRepository, AIModelGroup, BaseContextKwargs],
-    BaseUpdateServiceMixin[AIModelGroupRepository, AIModelGroup, AIModelGroupUpdate, BaseContextKwargs],
-    BaseDeleteServiceMixin[AIModelGroupRepository, AIModelGroup, BaseContextKwargs],
+    BaseCreateServiceMixin[AIModelGroupRepository, AIModelGroup, AIModelGroupCreate, AIModelGroupContextKwargs],
+    BaseGetMultiServiceMixin[AIModelGroupRepository, AIModelGroup, AIModelGroupContextKwargs],
+    BaseGetServiceMixin[AIModelGroupRepository, AIModelGroup, AIModelGroupContextKwargs],
+    BaseUpdateServiceMixin[AIModelGroupRepository, AIModelGroup, AIModelGroupUpdate, AIModelGroupContextKwargs],
+    BaseDeleteServiceMixin[AIModelGroupRepository, AIModelGroup, AIModelGroupContextKwargs],
 ):
     def __init__(self, repo: Annotated[AIModelGroupRepository, Depends()]):
         self._repo = repo
@@ -30,4 +34,4 @@ class AIModelGroupService(
 
     @property
     def context_model(self):
-        return BaseContextKwargs
+        return AIModelGroupContextKwargs

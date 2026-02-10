@@ -1,5 +1,5 @@
-import uuid
 from typing import Annotated
+from uuid import UUID
 
 from app.gateways.user_messages.schemas import UserMessageCreate, UserMessageRead, UserMessageUpdate
 from app.gateways.user_messages.usecases.crud import (
@@ -37,7 +37,7 @@ async def get_user_messages(
 @router.get("/{user_message_id}", response_model=UserMessageRead)
 async def get_user_message(
     use_case: Annotated[GetUserMessageUseCase, Depends()],
-    user_message_id: uuid.UUID,
+    user_message_id: UUID,
 ):
     user_message = await use_case.execute(user_message_id)
     if not user_message:
@@ -48,7 +48,7 @@ async def get_user_message(
 @router.put("/{user_message_id}", response_model=UserMessageRead)
 async def update_user_message(
     use_case: Annotated[UpdateUserMessageUseCase, Depends()],
-    user_message_id: uuid.UUID,
+    user_message_id: UUID,
     user_message_in: UserMessageUpdate,
 ):
     user_message = await use_case.execute(user_message_id, user_message_in)
@@ -60,6 +60,6 @@ async def update_user_message(
 @router.delete("/{user_message_id}", response_model=DeleteResponse)
 async def delete_user_message(
     use_case: Annotated[DeleteUserMessageUseCase, Depends()],
-    user_message_id: uuid.UUID,
+    user_message_id: UUID,
 ):
     return await use_case.execute(user_message_id)

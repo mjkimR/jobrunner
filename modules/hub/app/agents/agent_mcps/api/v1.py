@@ -1,5 +1,5 @@
-import uuid
 from typing import Annotated
+from uuid import UUID
 
 from app.agents.agent_mcps.schemas import AgentMCPCreate, AgentMCPRead, AgentMCPUpdate
 from app.agents.agent_mcps.usecases.crud import (
@@ -37,7 +37,7 @@ async def get_agent_mcps(
 @router.get("/{agent_mcp_id}", response_model=AgentMCPRead)
 async def get_agent_mcp(
     use_case: Annotated[GetAgentMCPUseCase, Depends()],
-    agent_mcp_id: uuid.UUID,
+    agent_mcp_id: UUID,
 ):
     agent_mcp = await use_case.execute(agent_mcp_id)
     if not agent_mcp:
@@ -48,7 +48,7 @@ async def get_agent_mcp(
 @router.put("/{agent_mcp_id}", response_model=AgentMCPRead)
 async def update_agent_mcp(
     use_case: Annotated[UpdateAgentMCPUseCase, Depends()],
-    agent_mcp_id: uuid.UUID,
+    agent_mcp_id: UUID,
     agent_mcp_in: AgentMCPUpdate,
 ):
     agent_mcp = await use_case.execute(agent_mcp_id, agent_mcp_in)
@@ -60,6 +60,6 @@ async def update_agent_mcp(
 @router.delete("/{agent_mcp_id}", response_model=DeleteResponse)
 async def delete_agent_mcp(
     use_case: Annotated[DeleteAgentMCPUseCase, Depends()],
-    agent_mcp_id: uuid.UUID,
+    agent_mcp_id: UUID,
 ):
     return await use_case.execute(agent_mcp_id)

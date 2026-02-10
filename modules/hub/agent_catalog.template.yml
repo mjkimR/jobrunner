@@ -1,0 +1,24 @@
+# draft agent catalog template
+skills:
+  - name: jr_cli
+    description: "JobRunner CLI 사용법"
+    skill_path: "modules/agent_tools/skills/jr_cli/SKILL.md"
+    version: "1.0.0"
+
+mcps:
+  - name: dagster
+    description: "Dagster MCP Server"
+    mcp_type: dagster
+    connection_config:
+      url: "http://localhost:3000"
+
+configured_agents:
+  - name: code-reviewer
+    description: "Code review assistant"
+    model: llm-high-performance  # alias 참조
+    system_prompt: "You are a code review assistant..."
+    skills: [ jr_cli ]
+    mcps: [ dagster ]
+    config:
+      temperature: 0.3
+      max_tokens: 4096

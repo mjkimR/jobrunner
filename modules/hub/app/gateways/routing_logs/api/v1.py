@@ -1,5 +1,5 @@
-import uuid
 from typing import Annotated
+from uuid import UUID
 
 from app.gateways.routing_logs.schemas import RoutingLogCreate, RoutingLogRead, RoutingLogUpdate
 from app.gateways.routing_logs.usecases.crud import (
@@ -37,7 +37,7 @@ async def get_routing_logs(
 @router.get("/{routing_log_id}", response_model=RoutingLogRead)
 async def get_routing_log(
     use_case: Annotated[GetRoutingLogUseCase, Depends()],
-    routing_log_id: uuid.UUID,
+    routing_log_id: UUID,
 ):
     routing_log = await use_case.execute(routing_log_id)
     if not routing_log:
@@ -48,7 +48,7 @@ async def get_routing_log(
 @router.put("/{routing_log_id}", response_model=RoutingLogRead)
 async def update_routing_log(
     use_case: Annotated[UpdateRoutingLogUseCase, Depends()],
-    routing_log_id: uuid.UUID,
+    routing_log_id: UUID,
     routing_log_in: RoutingLogUpdate,
 ):
     routing_log = await use_case.execute(routing_log_id, routing_log_in)
@@ -60,6 +60,6 @@ async def update_routing_log(
 @router.delete("/{routing_log_id}", response_model=DeleteResponse)
 async def delete_routing_log(
     use_case: Annotated[DeleteRoutingLogUseCase, Depends()],
-    routing_log_id: uuid.UUID,
+    routing_log_id: UUID,
 ):
     return await use_case.execute(routing_log_id)

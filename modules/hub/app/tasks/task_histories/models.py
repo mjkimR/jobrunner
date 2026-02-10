@@ -6,8 +6,8 @@ DB Schema Reference: docs/specification/DB_SCHEMA.md#1.3
 
 import datetime
 import enum
-import uuid
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
+from uuid import UUID
 
 from app_base.base.models.mixin import Base, UUIDMixin
 from sqlalchemy import DateTime, ForeignKey, String, Text, func
@@ -15,6 +15,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
     from app.agents.configured_agents.models import ConfiguredAgent
+    from app.platform.workspaces.models import Workspace
     from app.tasks.tasks.models import Task
 
 
@@ -33,8 +34,9 @@ class TaskHistory(Base, UUIDMixin):
     __tablename__ = "task_history"
 
     # Foreign keys
-    task_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("tasks.id"), nullable=False)
-    assigned_agent_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("configured_agents.id"), nullable=True)
+    workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id"), nullable=False)
+    task_id: Mapped[UUID] = mapped_column(ForeignKey("tasks.id"), nullable=False)
+    assigned_agent_id: Mapped[UUID | None] = mapped_column(ForeignKey("configured_agents.id"), nullable=True)
 
     # Event details
     event_type: Mapped[str] = mapped_column(String(50), nullable=False)
@@ -48,6 +50,7 @@ class TaskHistory(Base, UUIDMixin):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
-    # Relationships (use string references to avoid circular imports)
+    # Relationships
+    workspace: Mapped["Workspace"] = relationship("Workspace")
     task: Mapped["Task"] = relationship("Task", back_populates="histories")
-    assigned_agent: Mapped["ConfiguredAgent | None"] = relationship("ConfiguredAgent")
+    assigned_agent: Mapped[Optional["ConfiguredAgent"]] = relationship("ConfiguredAgent")

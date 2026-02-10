@@ -1,5 +1,5 @@
-import uuid
 from typing import Annotated
+from uuid import UUID
 
 from app.agents.configured_agents.schemas import ConfiguredAgentCreate, ConfiguredAgentRead, ConfiguredAgentUpdate
 from app.agents.configured_agents.usecases.crud import (
@@ -37,7 +37,7 @@ async def get_configured_agents(
 @router.get("/{configured_agent_id}", response_model=ConfiguredAgentRead)
 async def get_configured_agent(
     use_case: Annotated[GetConfiguredAgentUseCase, Depends()],
-    configured_agent_id: uuid.UUID,
+    configured_agent_id: UUID,
 ):
     configured_agent = await use_case.execute(configured_agent_id)
     if not configured_agent:
@@ -48,7 +48,7 @@ async def get_configured_agent(
 @router.put("/{configured_agent_id}", response_model=ConfiguredAgentRead)
 async def update_configured_agent(
     use_case: Annotated[UpdateConfiguredAgentUseCase, Depends()],
-    configured_agent_id: uuid.UUID,
+    configured_agent_id: UUID,
     configured_agent_in: ConfiguredAgentUpdate,
 ):
     configured_agent = await use_case.execute(configured_agent_id, configured_agent_in)
@@ -60,6 +60,6 @@ async def update_configured_agent(
 @router.delete("/{configured_agent_id}", response_model=DeleteResponse)
 async def delete_configured_agent(
     use_case: Annotated[DeleteConfiguredAgentUseCase, Depends()],
-    configured_agent_id: uuid.UUID,
+    configured_agent_id: UUID,
 ):
     return await use_case.execute(configured_agent_id)

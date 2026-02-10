@@ -1,5 +1,5 @@
-import uuid
 from typing import Annotated
+from uuid import UUID
 
 from app.agents.agent_executions.schemas import AgentExecutionCreate, AgentExecutionRead, AgentExecutionUpdate
 from app.agents.agent_executions.usecases.crud import (
@@ -37,7 +37,7 @@ async def get_agent_executions(
 @router.get("/{agent_execution_id}", response_model=AgentExecutionRead)
 async def get_agent_execution(
     use_case: Annotated[GetAgentExecutionUseCase, Depends()],
-    agent_execution_id: uuid.UUID,
+    agent_execution_id: UUID,
 ):
     agent_execution = await use_case.execute(agent_execution_id)
     if not agent_execution:
@@ -48,7 +48,7 @@ async def get_agent_execution(
 @router.put("/{agent_execution_id}", response_model=AgentExecutionRead)
 async def update_agent_execution(
     use_case: Annotated[UpdateAgentExecutionUseCase, Depends()],
-    agent_execution_id: uuid.UUID,
+    agent_execution_id: UUID,
     agent_execution_in: AgentExecutionUpdate,
 ):
     agent_execution = await use_case.execute(agent_execution_id, agent_execution_in)
@@ -60,6 +60,6 @@ async def update_agent_execution(
 @router.delete("/{agent_execution_id}", response_model=DeleteResponse)
 async def delete_agent_execution(
     use_case: Annotated[DeleteAgentExecutionUseCase, Depends()],
-    agent_execution_id: uuid.UUID,
+    agent_execution_id: UUID,
 ):
     return await use_case.execute(agent_execution_id)
