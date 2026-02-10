@@ -2,10 +2,29 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+/**
+ * Schema for creating a new AgentMCP entry.
+ */
 export type AgentMCPCreate = {
     /**
-     * The name of the agent_mcp.
+     * MCP Server Name
      */
     name: string;
+    /**
+     * MCP Server Description
+     */
+    description?: (string | null);
+    /**
+     * MCP Endpoint (URI or Command)
+     */
+    mcp_endpoint: string;
+    /**
+     * Version
+     */
+    version?: string;
+    /**
+     * Active status
+     */
+    is_active?: boolean;
 };
 

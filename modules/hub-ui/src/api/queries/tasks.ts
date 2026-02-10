@@ -39,7 +39,7 @@ export function useDeleteTaskMutation(workspaceId: string) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (taskId: string) => TaskService.deleteTaskApiV1WorkspaceWorkspaceIdTasksTaskIdDelete(workspaceId, taskId),
-    onSuccess: (_data, taskId) => {
+    onSuccess: (_data, _taskId) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.list(workspaceId) })
     },
   })

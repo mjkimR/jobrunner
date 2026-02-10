@@ -24,4 +24,26 @@ export const queryKeys = {
       ['workspaces', workspaceId, 'taskHistory', 'list', params] as const,
     detail: (workspaceId: string, id: string) => ['workspaces', workspaceId, 'taskHistory', 'detail', id] as const,
   },
+  configuredAgents: {
+    all: ['configuredAgents'] as const,
+    list: (params: { offset?: number; limit?: number } = {}) =>
+      ['configuredAgents', 'list', params] as const,
+    detail: (id: string) => ['configuredAgents', 'detail', id] as const,
+  },
+  conversations: {
+    all: ['conversations'] as const,
+    list: (params: { offset?: number; limit?: number } = {}) =>
+      ['conversations', 'list', params] as const,
+    detail: (id: string) => ['conversations', 'detail', id] as const,
+  },
+  chatMessages: {
+    all: ['chatMessages'] as const,
+    list: (conversationId: string, params: { offset?: number; limit?: number } = {}) =>
+      ['chatMessages', 'list', conversationId, params] as const,
+  },
+  routingLogs: {
+    all: ['routingLogs'] as const,
+    list: (params: { offset?: number; limit?: number } = {}) =>
+      ['routingLogs', 'list', params] as const,
+  },
 }

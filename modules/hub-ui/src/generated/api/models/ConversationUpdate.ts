@@ -2,10 +2,25 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+/**
+ * Schema for updating Conversation.
+ */
 export type ConversationUpdate = {
     /**
-     * The name of the conversation.
+     * Conversation Title
      */
-    name?: (string | null);
+    title?: (string | null);
+    /**
+     * Conversation Status
+     */
+    status?: (string | null);
+    /**
+     * Conversation Context
+     */
+    context?: (Record<string, any> | null);
+    /**
+     * Ended At
+     */
+    ended_at?: (string | null);
 };
 

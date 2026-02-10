@@ -13,7 +13,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
     from app.agents.configured_agents.models import ConfiguredAgent
-    from app.gateways.user_messages.models import Message
+    from app.gateways.chat_messages.models import ChatMessage
     from app.tasks.tasks.models import Task
 
 
@@ -30,6 +30,6 @@ class RoutingLog(Base, UUIDMixin, TimestampMixin):
     target_agent_id: Mapped[UUID | None] = mapped_column(ForeignKey("configured_agents.id"), nullable=True)
 
     # Relationships
-    message: Mapped["Message"] = relationship("Message")
+    message: Mapped["ChatMessage"] = relationship("Message")
     target_task: Mapped["Task"] = relationship("Task")
     target_agent: Mapped["ConfiguredAgent"] = relationship("ConfiguredAgent")

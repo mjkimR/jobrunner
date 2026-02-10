@@ -6,7 +6,6 @@ import type { DeleteResponse } from '../models/DeleteResponse';
 import type { PaginatedList_RoutingLogRead_ } from '../models/PaginatedList_RoutingLogRead_';
 import type { RoutingLogCreate } from '../models/RoutingLogCreate';
 import type { RoutingLogRead } from '../models/RoutingLogRead';
-import type { RoutingLogUpdate } from '../models/RoutingLogUpdate';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -68,30 +67,6 @@ export class RoutingLogService {
             path: {
                 'routing_log_id': routingLogId,
             },
-            errors: {
-                422: `Validation Error`,
-            },
-        });
-    }
-    /**
-     * Update Routing Log
-     * @param routingLogId
-     * @param requestBody
-     * @returns RoutingLogRead Successful Response
-     * @throws ApiError
-     */
-    public static updateRoutingLogApiV1RoutingLogsRoutingLogIdPut(
-        routingLogId: string,
-        requestBody: RoutingLogUpdate,
-    ): CancelablePromise<RoutingLogRead> {
-        return __request(OpenAPI, {
-            method: 'PUT',
-            url: '/api/v1/routing_logs/{routing_log_id}',
-            path: {
-                'routing_log_id': routingLogId,
-            },
-            body: requestBody,
-            mediaType: 'application/json',
             errors: {
                 422: `Validation Error`,
             },

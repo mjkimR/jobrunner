@@ -2,13 +2,73 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { AgentExecutionStatus } from './AgentExecutionStatus';
+import type { AgentExecutionType } from './AgentExecutionType';
+import type { AgentType } from './AgentType';
+/**
+ * Schema for reading AgentExecution data.
+ */
 export type AgentExecutionRead = {
-    created_at: string;
-    updated_at: string;
+    /**
+     * Type of agent (configured or graph)
+     */
+    agent_type: AgentType;
+    /**
+     * Configured Agent ID
+     */
+    configured_agent_id?: (string | null);
+    /**
+     * Graph Agent Name
+     */
+    graph_agent_name?: (string | null);
+    /**
+     * Associated Task ID
+     */
+    task_id?: (string | null);
+    /**
+     * Type of execution
+     */
+    execution_type: AgentExecutionType;
+    /**
+     * Execution status
+     */
+    status?: AgentExecutionStatus;
+    /**
+     * Input data
+     */
+    input_data?: (Record<string, any> | null);
+    /**
+     * Output data
+     */
+    output_data?: (Record<string, any> | null);
+    /**
+     * Error message
+     */
+    error_message?: (string | null);
+    /**
+     * Start timestamp
+     */
+    started_at?: (string | null);
+    /**
+     * Completion timestamp
+     */
+    completed_at?: (string | null);
+    /**
+     * Token usage data
+     */
+    token_usage?: (Record<string, any> | null);
+    /**
+     * Dagster Run ID
+     */
+    dagster_run_id?: (string | null);
     id: string;
     /**
-     * The name of the agent_execution.
+     * Creation timestamp
      */
-    name: string;
+    created_at: string;
+    /**
+     * Last update timestamp
+     */
+    updated_at: string;
 };
 

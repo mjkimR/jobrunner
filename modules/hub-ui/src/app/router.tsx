@@ -5,6 +5,11 @@ import TaskList from '../views/tasks/TaskList';
 import TaskTagList from '../views/tags/TaskTagList';
 import TaskHistoryList from '../views/history/TaskHistoryList';
 import WorkspaceList from '../views/workspaces/WorkspaceList';
+import AgentList from '../views/agents/AgentList';
+import GatewayLayout from '../views/gateway/GatewayLayout';
+import ConversationList from '../views/gateway/ConversationList';
+import ConversationDetail from '../views/gateway/ConversationDetail';
+import RoutingLogList from '../views/gateway/RoutingLogList';
 
 export const router = createBrowserRouter([
   {
@@ -37,13 +42,31 @@ export const router = createBrowserRouter([
             },
             {
                 path: 'gateway',
-                element: <div>Gateway Page</div>
+                element: <GatewayLayout />,
+                children: [
+                    {
+                        index: true,
+                        element: <Navigate to="conversations" replace />
+                    },
+                    {
+                        path: 'conversations',
+                        element: <ConversationList />,
+                    },
+                    {
+                        path: 'conversations/:conversationId',
+                        element: <ConversationDetail />,
+                    },
+                    {
+                        path: 'logs',
+                        element: <RoutingLogList />,
+                    }
+                ]
             }
         ]
       },
       {
         path: 'agents',
-        element: <div>Agents Page</div>,
+        element: <AgentList />,
       },
       {
         path: 'settings',

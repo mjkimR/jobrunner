@@ -1,13 +1,12 @@
 from typing import Annotated
 from uuid import UUID
 
-from app.gateways.routing_logs.schemas import RoutingLogCreate, RoutingLogRead, RoutingLogUpdate
+from app.gateways.routing_logs.schemas import RoutingLogCreate, RoutingLogRead
 from app.gateways.routing_logs.usecases.crud import (
     CreateRoutingLogUseCase,
     DeleteRoutingLogUseCase,
     GetMultiRoutingLogUseCase,
     GetRoutingLogUseCase,
-    UpdateRoutingLogUseCase,
 )
 from app_base.base.deps.params.page import PaginationParam
 from app_base.base.exceptions.basic import NotFoundException
@@ -40,18 +39,6 @@ async def get_routing_log(
     routing_log_id: UUID,
 ):
     routing_log = await use_case.execute(routing_log_id)
-    if not routing_log:
-        raise NotFoundException()
-    return routing_log
-
-
-@router.put("/{routing_log_id}", response_model=RoutingLogRead)
-async def update_routing_log(
-    use_case: Annotated[UpdateRoutingLogUseCase, Depends()],
-    routing_log_id: UUID,
-    routing_log_in: RoutingLogUpdate,
-):
-    routing_log = await use_case.execute(routing_log_id, routing_log_in)
     if not routing_log:
         raise NotFoundException()
     return routing_log

@@ -71,7 +71,7 @@ def upgrade() -> None:
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('user_messages',
+    op.create_table('chat_messages',
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
@@ -162,7 +162,7 @@ def downgrade() -> None:
     op.drop_table('task_tags')
     op.drop_index('ix_workspaces_is_default_unique', table_name='workspaces', postgresql_where=sa.text('is_default IS 1'), sqlite_where=sa.text('is_default IS 1'))
     op.drop_table('workspaces')
-    op.drop_table('user_messages')
+    op.drop_table('chat_messages')
     op.drop_table('routing_logs')
     op.drop_table('conversations')
     op.drop_table('configured_agents')

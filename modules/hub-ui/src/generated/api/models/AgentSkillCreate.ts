@@ -2,10 +2,29 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+/**
+ * Schema for creating a new AgentSkill entry.
+ */
 export type AgentSkillCreate = {
     /**
-     * The name of the agent_skill.
+     * Skill Name
      */
     name: string;
+    /**
+     * Skill Description
+     */
+    description?: (string | null);
+    /**
+     * Skill Path (SKILL.md)
+     */
+    skill_path: string;
+    /**
+     * Version
+     */
+    version?: string;
+    /**
+     * Active status
+     */
+    is_active?: boolean;
 };
 

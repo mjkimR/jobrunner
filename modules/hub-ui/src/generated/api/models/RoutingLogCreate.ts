@@ -2,10 +2,33 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+/**
+ * Schema for creating a new RoutingLog.
+ */
 export type RoutingLogCreate = {
     /**
-     * The name of the routing_log.
+     * Message ID
      */
-    name: string;
+    message_id: string;
+    /**
+     * Routing Result
+     */
+    routing_result: string;
+    /**
+     * Confidence Score
+     */
+    confidence?: (number | null);
+    /**
+     * Routing Reasoning
+     */
+    reasoning?: (string | null);
+    /**
+     * Target Task ID
+     */
+    target_task_id?: (string | null);
+    /**
+     * Target Agent ID
+     */
+    target_agent_id?: (string | null);
 };
 

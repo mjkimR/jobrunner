@@ -5,9 +5,9 @@ from app.agents.agent_mcps.api.v1 import router as v1_agent_mcps_router
 from app.agents.agent_skills.api.v1 import router as v1_agent_skills_router
 from app.agents.ai_model_catalogs.api.v1 import router as v1_ai_models_router
 from app.agents.configured_agents.api.v1 import router as v1_configured_agents_router
+from app.gateways.chat_messages.api.v1 import router as v1_chat_messages_router
 from app.gateways.conversations.api.v1 import router as v1_conversations_router
 from app.gateways.routing_logs.api.v1 import router as v1_routing_logs_router
-from app.gateways.user_messages.api.v1 import router as v1_user_messages_router
 from app.platform.workspaces.api.v1 import router as v1_workspaces_router
 from app.tasks.task_histories.api.v1 import router as v1_task_histories_router
 from app.tasks.task_tags.api.v1 import router as v1_task_tags_router
@@ -48,7 +48,7 @@ v1_router.include_router(v1_agent_skills_router)
 v1_router.include_router(v1_agent_mcps_router)
 v1_router.include_router(v1_agent_executions_router)
 v1_router.include_router(v1_conversations_router)
-v1_router.include_router(v1_user_messages_router)
+v1_router.include_router(v1_chat_messages_router)
 v1_router.include_router(v1_routing_logs_router)
 v1_router.include_router(v1_workspaces_router)
 router.include_router(v1_router)

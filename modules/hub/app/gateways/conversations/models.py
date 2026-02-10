@@ -14,7 +14,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
-    from app.gateways.user_messages.models import Message
+    from app.gateways.chat_messages.models import ChatMessage
     from app.platform.workspaces.models import Workspace
 
 
@@ -33,6 +33,6 @@ class Conversation(Base, UUIDMixin, TimestampMixin):
 
     # Relationships
     workspace: Mapped["Workspace"] = relationship("Workspace")
-    messages: Mapped[list["Message"]] = relationship(
-        "Message", back_populates="conversation", cascade="all, delete-orphan"
+    messages: Mapped[list["ChatMessage"]] = relationship(
+        "ChatMessage", back_populates="conversation", cascade="all, delete-orphan"
     )

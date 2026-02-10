@@ -28,7 +28,7 @@ export function useUpdateWorkspaceMutation(workspaceId: string) {
     return useMutation({
         mutationFn: (data: WorkspaceUpdate) =>
             WorkspacesService.updateWorkspaceApiV1WorkspacesWorkspaceIdPut(workspaceId, data),
-        onSuccess: (_data, variables) => {
+        onSuccess: (_data, _variables) => {
             queryClient.invalidateQueries({ queryKey: queryKeys.workspaces.all })
             queryClient.invalidateQueries({ queryKey: queryKeys.workspaces.detail(workspaceId) })
         },

@@ -30,3 +30,12 @@ class RoutingLogRead(UUIDSchemaMixin, TimestampSchemaMixin, RoutingLogBase):
     """Schema for reading RoutingLog data."""
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class RoutingLogUpdate(BaseModel):
+    """Schema for updating a RoutingLog.
+
+    Empty schema because RoutingLog is immutable.
+    """
+
+    pass

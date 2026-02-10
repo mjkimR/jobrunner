@@ -2,10 +2,41 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+/**
+ * Schema for updating ConfiguredAgent.
+ */
 export type ConfiguredAgentUpdate = {
     /**
-     * The name of the configured_agent.
+     * Agent Name
      */
     name?: (string | null);
+    /**
+     * Agent Description
+     */
+    description?: (string | null);
+    /**
+     * Model Name
+     */
+    model_name?: (string | null);
+    /**
+     * System Prompt
+     */
+    system_prompt?: (string | null);
+    /**
+     * Configuration
+     */
+    config?: (Record<string, any> | null);
+    /**
+     * Active Status
+     */
+    is_active?: (boolean | null);
+    /**
+     * List of Skill IDs
+     */
+    skill_ids?: (Array<string> | null);
+    /**
+     * List of MCP IDs
+     */
+    mcp_ids?: (Array<string> | null);
 };
 
