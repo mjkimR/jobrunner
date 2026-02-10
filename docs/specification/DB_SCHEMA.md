@@ -10,11 +10,54 @@
 
 Hub 모듈은 3가지 핵심 Feature로 구성됩니다:
 
-| Feature | 역할 | 주요 엔티티 |
-|---------|------|-------------|
-| **Tasks** | Task Manager - 할일 관리, Host Agent의 영구 메모리 | Task, SubTask |
-| **Agents** | Agent Manager - Worker LLM Agent 생명주기 관리 | Agent, AgentExecution |
-| **Gateway** | Local Agent Gateway - 채팅 인터페이스, 라우팅 | Conversation, Message |
+| Feature | 역할 | 주요 엔티티 | Workspace 분리 |
+|---------|------|-------------|---------------|
+| **Tasks** | Task Manager - 할일 관리, Host Agent의 영구 메모리 | Task, SubTask | ✅ Workspace별 분리 |
+| **Agents** | Agent Manager - Worker LLM Agent 생명주기 관리 | Agent, AgentExecution | ❌ Global Scope |
+| **Gateway** | Local Agent Gateway - 채팅 인터페이스, 라우팅 | Conversation, Message | ✅ Workspace별 분리 |
+
+---
+
+## 0. Workspaces (환경 분리)
+
+### 0.1. Workspace
+
+프로젝트/환경 단위로 Task와 Gateway 데이터를 분리하는 논리적 영역.
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ workspaces                                                                  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ PK  id              UUID          NOT NULL                                  │
+│     name            VARCHAR(100)  NOT NULL  UNIQUE                          │
+│     alias           VARCHAR(100)  NOT NULL  UNIQUE                          │
+│     description     TEXT          NULL                                      │
+│     meta            JSONB         NOT NULL  DEFAULT '{}'                    │
+│     is_active       BOOLEAN       NOT NULL  DEFAULT true                    │
+│     is_default      BOOLEAN       NOT NULL  DEFAULT false                   │
+│     created_at      TIMESTAMP     NOT NULL  DEFAULT now()                   │
+│     updated_at      TIMESTAMP     NOT NULL  DEFAULT now()                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+**컬럼 설명:**
+
+| 컬럼 | 설명 | 예시 |
+|------|------|------|
+| `name` | Workspace 표시 이름 | `Main Project`, `Personal Tasks` |
+| `alias` | URL/API에서 사용할 식별자 (예: URL 경로, API 키 등) | `main-project`, `personal-tasks` |
+| `meta` | Workspace별 추가 메타데이터 (예: 사용자 정의 설정) | `{"theme": "dark", "language": "ko"}` |
+| `is_default` | 기본 Workspace 여부 (단, 하나만 True) | `true`, `false` |
+
+**Workspace 분리 범위:**
+
+| 영역 | 분리 여부 | 이유 |
+|------|----------|------|
+| **Tasks** | ✅ 분리 | 프로젝트별로 할일 목록이 독립적으로 관리되어야 함 |
+| **TaskTag** | ✅ 분리 | Workspace별로 다른 태그 체계 사용 가능 |
+| **TaskHistory** | ✅ 분리 | Task에 종속되므로 함께 분리 |
+| **Agents** | ❌ Global | AI 모델/Agent 설정은 모든 Workspace에서 공유 |
+| **Gateway** | ✅ 분리 | Workspace별로 채팅 세션을 독립적으로 관리 |
 
 ---
 
@@ -22,13 +65,14 @@ Hub 모듈은 3가지 핵심 Feature로 구성됩니다:
 
 ### 1.1. Task
 
-Host Agent 또는 사용자가 관리하는 TODO 항목.
+Host Agent 또는 사용자가 관리하는 TODO 항목. **Workspace별로 분리 관리**.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │ tasks                                                                       │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │ PK  id              UUID          NOT NULL                                  │
+│ FK  workspace_id    UUID          NOT NULL  -> workspaces.id               │
 │     title           VARCHAR(255)  NOT NULL                                  │
 │     description     TEXT          NULL                                      │
 │     status          VARCHAR(50)   NOT NULL  DEFAULT 'pending'               │
@@ -72,17 +116,20 @@ Host Agent 또는 사용자가 관리하는 TODO 항목.
 
 ### 1.2. TaskTag
 
-Task 분류를 위한 태그.
+Task 분류를 위한 태그. **Workspace별로 분리 관리**.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │ task_tags                                                                   │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │ PK  id              UUID          NOT NULL                                  │
-│     name            VARCHAR(100)  NOT NULL  UNIQUE                          │
+│ FK  workspace_id    UUID          NOT NULL  -> workspaces.id                │
+│     name            VARCHAR(100)  NOT NULL                                  │
 │     description     VARCHAR(255)  NULL                                      │
 │     color           VARCHAR(7)    NULL      -- #RRGGBB                      │
 │     created_at      TIMESTAMP     NOT NULL  DEFAULT now()                   │
+│     updated_at      TIMESTAMP     NOT NULL  DEFAULT now()                   │
+│     UNIQUE (workspace_id, name)                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -105,6 +152,7 @@ Task 상태 변경 및 할당 이력. Agent 할당도 이력으로 관리하여 
 │ task_history                                                                │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │ PK  id              UUID          NOT NULL                                  │
+│ FK  workspace_id    UUID          NOT NULL  -> workspaces.id                │
 │ FK  task_id         UUID          NOT NULL  -> tasks.id                     │
 │     event_type      VARCHAR(50)   NOT NULL                                  │
 │     previous_value  VARCHAR(100)  NULL                                      │
@@ -148,7 +196,7 @@ Task 상태 변경 및 할당 이력. Agent 할당도 이력으로 관리하여 
 │     description     TEXT          NULL                                      │
 │     capabilities    JSONB         NOT NULL  DEFAULT '[]'                    │
 │     args            JSONB         NOT NULL  DEFAULT '{}'                    │
-│     param_spec      JSONB         NULL      -- exclude/map 규칙             │
+│     param_spec      JSONB         NULL      -- exclude/map 규칙              │
 │     is_active       BOOLEAN       NOT NULL  DEFAULT true                    │
 │     created_at      TIMESTAMP     NOT NULL  DEFAULT now()                   │
 │     updated_at      TIMESTAMP     NOT NULL  DEFAULT now()                   │
@@ -376,13 +424,14 @@ Agent에 연결 가능한 MCP Server 목록.
 
 ### 3.1. Conversation
 
-채팅 대화 세션.
+채팅 대화 세션. **Workspace별로 분리 관리**.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │ conversations                                                               │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │ PK  id              UUID          NOT NULL                                  │
+│ FK  workspace_id    UUID          NOT NULL  -> workspaces.id               │
 │     title           VARCHAR(255)  NULL      -- 자동 생성 또는 사용자 설정    │
 │     channel         VARCHAR(50)   NOT NULL  DEFAULT 'web'                   │
 │     status          VARCHAR(50)   NOT NULL  DEFAULT 'active'                │
@@ -463,18 +512,29 @@ Gateway의 라우팅 결정 이력.
 
 ## 인덱스 설계
 
+### Workspaces
+```sql
+CREATE INDEX idx_workspaces_slug ON workspaces(slug);
+CREATE INDEX idx_workspaces_active ON workspaces(is_active);
+```
+
 ### Tasks
 ```sql
+CREATE INDEX idx_tasks_workspace ON tasks(workspace_id);
 CREATE INDEX idx_tasks_status ON tasks(status);
 CREATE INDEX idx_tasks_queue ON tasks(queue);
 CREATE INDEX idx_tasks_status_queue ON tasks(status, queue);  -- Dagster sensor polling용
+CREATE INDEX idx_tasks_workspace_status ON tasks(workspace_id, status);
+CREATE INDEX idx_tasks_workspace_queue ON tasks(workspace_id, queue);
 CREATE INDEX idx_tasks_priority ON tasks(priority);
 CREATE INDEX idx_tasks_urgency ON tasks(urgency);
 CREATE INDEX idx_tasks_parent ON tasks(parent_task_id);
 CREATE INDEX idx_tasks_created ON tasks(created_at DESC);
 
+CREATE INDEX idx_task_tags_workspace ON task_tags(workspace_id);
+CREATE INDEX idx_task_history_workspace ON task_history(workspace_id);
 CREATE INDEX idx_task_history_task ON task_history(task_id);
-CREATE INDEX idx_task_history_agent ON task_history(assigned_agent_id);
+CREATE INDEX idx_task_history_assigned_agent ON task_history(assigned_agent_id);
 CREATE INDEX idx_task_history_event_type ON task_history(event_type);
 ```
 
@@ -504,7 +564,9 @@ CREATE INDEX idx_agent_executions_dagster ON agent_executions(dagster_run_id);
 
 ### Gateway
 ```sql
+CREATE INDEX idx_conversations_workspace ON conversations(workspace_id);
 CREATE INDEX idx_conversations_status ON conversations(status);
+CREATE INDEX idx_conversations_workspace_status ON conversations(workspace_id, status);
 CREATE INDEX idx_conversations_created ON conversations(created_at DESC);
 CREATE INDEX idx_messages_conversation ON messages(conversation_id);
 CREATE INDEX idx_messages_created ON messages(created_at DESC);
@@ -525,10 +587,12 @@ CREATE INDEX idx_routing_logs_message ON routing_logs(message_id);
 
 ## Changelog
 
-| 날짜 | 버전 | 변경 내용 |
-|------|------|----------|
+| 날짜 | 버전     | 변경 내용 |
+|------|--------|----------|
 | 2026-02-08 | v0.1.0 | 초기 스키마 설계 |
 | 2026-02-08 | v0.1.1 | `queue` 필드 추가, `assigned_agent_id`를 `task_history`로 이동 |
 | 2026-02-08 | v0.2.0 | Agent 아키텍처 개편: `ai_model_registry`, `configured_agents` 추가, Configured/Graph Agent 분리 |
 | 2026-02-08 | v0.2.1 | AI 카탈로그 호환: `ai_model_aliases`, `ai_model_groups` 추가, `model_type`, `args`, `param_spec` 필드 추가 |
+| 2026-02-10 | v0.2.2 | `workspaces` 테이블: `slug`를 `alias`로 변경, `is_default` 컬럼 추가, `meta` 설명 업데이트. `task_tags` 테이블: `workspace_id` 및 `updated_at` 컬럼 추가, `(workspace_id, name)` UNIQUE 제약조건 추가. `task_history` 테이블: `workspace_id` 컬럼 추가, `updated_at` 컬럼 제거. `task_history` 인덱스 업데이트. |
+
 
