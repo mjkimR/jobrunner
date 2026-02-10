@@ -1,5 +1,5 @@
 
-import type { ColumnDef } from "@tanstack/react-table"
+import type { ColumnDef, OnChangeFn, PaginationState } from "@tanstack/react-table"
 import {
     flexRender,
     getCoreRowModel,
@@ -16,16 +16,15 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
     pageCount?: number
-    pagination?: {
-        pageIndex: number
-        pageSize: number
-    }
-    onPaginationChange?: (pagination: { pageIndex: number; pageSize: number }) => void
+    pagination?: PaginationState
+    onPaginationChange?: OnChangeFn<PaginationState>
+    isLoading?: boolean
 }
 
 export function DataTable<TData, TValue>({
@@ -34,34 +33,23 @@ export function DataTable<TData, TValue>({
     pageCount,
     pagination,
     onPaginationChange,
+    isLoading = false,
 }: DataTableProps<TData, TValue>) {
     const table = useReactTable({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
-        manualPagination: !!pageCount,
+        manualPagination: pageCount != null && pageCount > -1,
         pageCount: pageCount ?? -1,
         state: {
-            pagination: pagination,
+            pagination,
         },
-        onPaginationChange: (updater) => {
-            if (typeof updater === 'function' && pagination) {
-                const next = updater({
-                    pageIndex: pagination.pageIndex,
-                    pageSize: pagination.pageSize,
-                });
-                onPaginationChange?.(next);
-            } else if (typeof updater !== 'function' && onPaginationChange) {
-                // This case is tricky with strict types but simplified for now
-                // casting updater as any since we expect it to be the new state if not function
-                onPaginationChange(updater as any);
-            }
-        }
+        onPaginationChange,
     })
 
     return (
-        <div>
+        <div className="space-y-4">
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>
@@ -83,7 +71,17 @@ export function DataTable<TData, TValue>({
                         ))}
                     </TableHeader>
                     <TableBody>
-                        {table.getRowModel().rows?.length ? (
+                        {isLoading ? (
+                            Array.from({ length: pagination?.pageSize ?? 10 }).map((_, i) => (
+                                <TableRow key={i}>
+                                    {columns.map((column, j) => (
+                                        <TableCell key={j}>
+                                            <Skeleton className="h-6" />
+                                        </TableCell>
+                                    ))}
+                                </TableRow>
+                            ))
+                        ) : table.getRowModel().rows?.length ? (
                             table.getRowModel().rows.map((row) => (
                                 <TableRow
                                     key={row.id}
@@ -106,32 +104,20 @@ export function DataTable<TData, TValue>({
                     </TableBody>
                 </Table>
             </div>
-            <div className="flex items-center justify-end space-x-2 py-4">
+            <div className="flex items-center justify-end space-x-2">
                 <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                        if (onPaginationChange && pagination) {
-                            onPaginationChange({ ...pagination, pageIndex: pagination.pageIndex - 1 })
-                        } else {
-                            table.previousPage()
-                        }
-                    }}
-                    disabled={pagination ? pagination.pageIndex === 0 : !table.getCanPreviousPage()}
+                    onClick={() => table.previousPage()}
+                    disabled={!table.getCanPreviousPage()}
                 >
                     Previous
                 </Button>
                 <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                        if (onPaginationChange && pagination) {
-                            onPaginationChange({ ...pagination, pageIndex: pagination.pageIndex + 1 })
-                        } else {
-                            table.nextPage()
-                        }
-                    }}
-                    disabled={pagination && pageCount ? pagination.pageIndex >= pageCount - 1 : !table.getCanNextPage()}
+                    onClick={() => table.nextPage()}
+                    disabled={!table.getCanNextPage()}
                 >
                     Next
                 </Button>

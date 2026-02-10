@@ -46,6 +46,7 @@ export type { PaginatedList_TaskHistoryRead_ } from './models/PaginatedList_Task
 export type { PaginatedList_TaskRead_ } from './models/PaginatedList_TaskRead_';
 export type { PaginatedList_TaskTagRead_ } from './models/PaginatedList_TaskTagRead_';
 export type { PaginatedList_UserMessageRead_ } from './models/PaginatedList_UserMessageRead_';
+export type { PaginatedList_WorkspaceRead_ } from './models/PaginatedList_WorkspaceRead_';
 export type { RoutingLogCreate } from './models/RoutingLogCreate';
 export type { RoutingLogRead } from './models/RoutingLogRead';
 export type { RoutingLogUpdate } from './models/RoutingLogUpdate';
@@ -68,6 +69,9 @@ export type { UserMessageCreate } from './models/UserMessageCreate';
 export type { UserMessageRead } from './models/UserMessageRead';
 export type { UserMessageUpdate } from './models/UserMessageUpdate';
 export type { ValidationError } from './models/ValidationError';
+export type { WorkspaceCreate } from './models/WorkspaceCreate';
+export type { WorkspaceRead } from './models/WorkspaceRead';
+export type { WorkspaceUpdate } from './models/WorkspaceUpdate';
 
 export { AgentExecutionService } from './services/AgentExecutionService';
 export { AgentMcpService } from './services/AgentMcpService';
@@ -83,3 +87,4 @@ export { TaskService } from './services/TaskService';
 export { TaskHistorieService } from './services/TaskHistorieService';
 export { TaskTagService } from './services/TaskTagService';
 export { UserMessageService } from './services/UserMessageService';
+export { WorkspacesService } from './services/WorkspacesService';

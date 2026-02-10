@@ -3,31 +3,26 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { DeleteResponse } from '../models/DeleteResponse';
-import type { PaginatedList_TaskTagRead_ } from '../models/PaginatedList_TaskTagRead_';
-import type { TaskTagCreate } from '../models/TaskTagCreate';
-import type { TaskTagRead } from '../models/TaskTagRead';
-import type { TaskTagUpdate } from '../models/TaskTagUpdate';
+import type { PaginatedList_WorkspaceRead_ } from '../models/PaginatedList_WorkspaceRead_';
+import type { WorkspaceCreate } from '../models/WorkspaceCreate';
+import type { WorkspaceRead } from '../models/WorkspaceRead';
+import type { WorkspaceUpdate } from '../models/WorkspaceUpdate';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
-export class TaskTagService {
+export class WorkspacesService {
     /**
-     * Create Task Tag
-     * @param workspaceId
+     * Create Workspace
      * @param requestBody
-     * @returns TaskTagRead Successful Response
+     * @returns WorkspaceRead Successful Response
      * @throws ApiError
      */
-    public static createTaskTagApiV1WorkspaceWorkspaceIdTaskTagsPost(
-        workspaceId: string,
-        requestBody: TaskTagCreate,
-    ): CancelablePromise<TaskTagRead> {
+    public static createWorkspaceApiV1WorkspacesPost(
+        requestBody: WorkspaceCreate,
+    ): CancelablePromise<WorkspaceRead> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/v1/workspace/{workspace_id}/task_tags',
-            path: {
-                'workspace_id': workspaceId,
-            },
+            url: '/api/v1/workspaces',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -36,24 +31,19 @@ export class TaskTagService {
         });
     }
     /**
-     * Get Task Tags
-     * @param workspaceId
+     * Get Workspaces
      * @param offset offset for pagination
      * @param limit limit for pagination
-     * @returns PaginatedList_TaskTagRead_ Successful Response
+     * @returns PaginatedList_WorkspaceRead_ Successful Response
      * @throws ApiError
      */
-    public static getTaskTagsApiV1WorkspaceWorkspaceIdTaskTagsGet(
-        workspaceId: string,
+    public static getWorkspacesApiV1WorkspacesGet(
         offset?: number,
         limit: number = 100,
-    ): CancelablePromise<PaginatedList_TaskTagRead_> {
+    ): CancelablePromise<PaginatedList_WorkspaceRead_> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/workspace/{workspace_id}/task_tags',
-            path: {
-                'workspace_id': workspaceId,
-            },
+            url: '/api/v1/workspaces',
             query: {
                 'offset': offset,
                 'limit': limit,
@@ -64,22 +54,19 @@ export class TaskTagService {
         });
     }
     /**
-     * Get Task Tag
+     * Get Workspace
      * @param workspaceId
-     * @param taskTagId
-     * @returns TaskTagRead Successful Response
+     * @returns WorkspaceRead Successful Response
      * @throws ApiError
      */
-    public static getTaskTagApiV1WorkspaceWorkspaceIdTaskTagsTaskTagIdGet(
+    public static getWorkspaceApiV1WorkspacesWorkspaceIdGet(
         workspaceId: string,
-        taskTagId: string,
-    ): CancelablePromise<TaskTagRead> {
+    ): CancelablePromise<WorkspaceRead> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/workspace/{workspace_id}/task_tags/{task_tag_id}',
+            url: '/api/v1/workspaces/{workspace_id}',
             path: {
                 'workspace_id': workspaceId,
-                'task_tag_id': taskTagId,
             },
             errors: {
                 422: `Validation Error`,
@@ -87,24 +74,21 @@ export class TaskTagService {
         });
     }
     /**
-     * Update Task Tag
+     * Update Workspace
      * @param workspaceId
-     * @param taskTagId
      * @param requestBody
-     * @returns TaskTagRead Successful Response
+     * @returns WorkspaceRead Successful Response
      * @throws ApiError
      */
-    public static updateTaskTagApiV1WorkspaceWorkspaceIdTaskTagsTaskTagIdPut(
+    public static updateWorkspaceApiV1WorkspacesWorkspaceIdPut(
         workspaceId: string,
-        taskTagId: string,
-        requestBody: TaskTagUpdate,
-    ): CancelablePromise<TaskTagRead> {
+        requestBody: WorkspaceUpdate,
+    ): CancelablePromise<WorkspaceRead> {
         return __request(OpenAPI, {
             method: 'PUT',
-            url: '/api/v1/workspace/{workspace_id}/task_tags/{task_tag_id}',
+            url: '/api/v1/workspaces/{workspace_id}',
             path: {
                 'workspace_id': workspaceId,
-                'task_tag_id': taskTagId,
             },
             body: requestBody,
             mediaType: 'application/json',
@@ -114,22 +98,19 @@ export class TaskTagService {
         });
     }
     /**
-     * Delete Task Tag
+     * Delete Workspace
      * @param workspaceId
-     * @param taskTagId
      * @returns DeleteResponse Successful Response
      * @throws ApiError
      */
-    public static deleteTaskTagApiV1WorkspaceWorkspaceIdTaskTagsTaskTagIdDelete(
+    public static deleteWorkspaceApiV1WorkspacesWorkspaceIdDelete(
         workspaceId: string,
-        taskTagId: string,
     ): CancelablePromise<DeleteResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/v1/workspace/{workspace_id}/task_tags/{task_tag_id}',
+            url: '/api/v1/workspaces/{workspace_id}',
             path: {
                 'workspace_id': workspaceId,
-                'task_tag_id': taskTagId,
             },
             errors: {
                 422: `Validation Error`,

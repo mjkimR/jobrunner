@@ -1,76 +1,73 @@
-
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useTaskTagsQuery, useDeleteTaskTagMutation } from '@/api/queries/taskTags';
+import { useWorkspacesQuery, useDeleteWorkspaceMutation } from '@/api/queries/workspaces';
 import { DataTable } from '@/components/ui/data-table';
-import { getTagColumns } from './columns';
+import { getWorkspaceColumns } from './columns';
 import { Button } from '@/components/ui/button';
-import type { TaskTagRead } from '@/generated/api/models/TaskTagRead';
-import TaskTagForm from './TaskTagForm';
+import type { WorkspaceRead } from '@/generated/api';
+import WorkspaceForm from './WorkspaceForm';
 import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus } from 'lucide-react';
 import { queryKeys } from '@/api/queryKeys';
-import { useParams } from 'react-router-dom';
 
-export default function TaskTagList() {
-    const { workspaceId } = useParams<{ workspaceId: string }>();
+export default function WorkspaceList() {
     const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
-    const [selectedTag, setSelectedTag] = useState<TaskTagRead | null>(null);
+    const [selectedWorkspace, setSelectedWorkspace] = useState<WorkspaceRead | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const queryClient = useQueryClient();
 
-    const { data, isLoading } = useTaskTagsQuery(workspaceId!, {
+    const { data, isLoading } = useWorkspacesQuery({
         offset: pagination.pageIndex * pagination.pageSize,
         limit: pagination.pageSize,
     });
 
-    const deleteMutation = useDeleteTaskTagMutation(workspaceId!);
+    const deleteMutation = useDeleteWorkspaceMutation();
 
-    const handleEdit = (tag: TaskTagRead) => {
-        setSelectedTag(tag);
+    const handleEdit = (workspace: WorkspaceRead) => {
+        setSelectedWorkspace(workspace);
         setIsDialogOpen(true);
     };
 
-    const handleDelete = async (tag: TaskTagRead) => {
-        if (confirm('Are you sure you want to delete this tag?')) {
-            deleteMutation.mutate(tag.id);
+    const handleDelete = async (workspace: WorkspaceRead) => {
+        if (confirm('Are you sure you want to delete this workspace? This action cannot be undone.')) {
+            deleteMutation.mutate(workspace.id);
         }
     };
-    
+
     const handleFormSuccess = () => {
         setIsDialogOpen(false);
-        queryClient.invalidateQueries({ queryKey: queryKeys.taskTags.list(workspaceId!) });
+        queryClient.invalidateQueries({ queryKey: queryKeys.workspaces.all });
     };
-
+    
     const handleOpenChange = (open: boolean) => {
         setIsDialogOpen(open);
-        if (!open) setSelectedTag(null);
+        if (!open) setSelectedWorkspace(null);
     };
 
-    const columns = getTagColumns({ onEdit: handleEdit, onDelete: handleDelete });
+    const columns = getWorkspaceColumns({ onEdit: handleEdit, onDelete: handleDelete });
     const pageCount = data ? Math.ceil((data.total_count ?? 0) / pagination.pageSize) : 0;
 
-    if (!workspaceId) {
-        return <div>Invalid workspace.</div>
-    }
-
     return (
-        <div className="space-y-4">
+        <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-bold tracking-tight">Task Tags</h2>
+                <div>
+                    <h2 className="text-2xl font-bold tracking-tight">Workspaces</h2>
+                    <p className="text-muted-foreground">
+                        Manage all workspaces in the system.
+                    </p>
+                </div>
                 <Dialog open={isDialogOpen} onOpenChange={handleOpenChange}>
                     <DialogTrigger asChild>
-                        <Button onClick={() => setSelectedTag(null)}>
-                            <Plus className="mr-2 h-4 w-4" /> Create Tag
+                        <Button onClick={() => setSelectedWorkspace(null)}>
+                            <Plus className="mr-2 h-4 w-4" /> Create Workspace
                         </Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="max-w-md">
                         <DialogHeader>
-                            <DialogTitle>{selectedTag ? 'Edit Tag' : 'Create Tag'}</DialogTitle>
+                            <DialogTitle>{selectedWorkspace ? 'Edit Workspace' : 'Create Workspace'}</DialogTitle>
                         </DialogHeader>
-                        <TaskTagForm
-                            workspaceId={workspaceId}
-                            tag={selectedTag}
+                        <WorkspaceForm
+                            workspace={selectedWorkspace}
                             onSuccess={handleFormSuccess}
                         />
                     </DialogContent>

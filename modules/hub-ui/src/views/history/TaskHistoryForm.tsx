@@ -15,13 +15,12 @@ import { Input } from '@/components/ui/input';
 import type { TaskHistoryRead } from '@/generated/api/models/TaskHistoryRead';
 import type { TaskHistoryCreate } from '@/generated/api/models/TaskHistoryCreate';
 import type { TaskHistoryUpdate } from '@/generated/api/models/TaskHistoryUpdate';
-import { TaskHistorieService } from '@/generated/api/services/TaskHistorieService';
-import { useMutation } from '@tanstack/react-query';
+import { useCreateTaskHistoryMutation, useUpdateTaskHistoryMutation } from '@/api/queries/taskHistory';
 import { useEffect } from 'react';
 
 const historySchema = z.object({
     task_id: z.string().min(1, 'Task ID is required'),
-    event_type: z.string().min(1, 'Event Type is required'),
+    event_type: z.enum(['status_change', 'assignment', 'queue_change', 'priority_change']),
     new_value: z.string().min(1, 'New Value is required'),
     previous_value: z.string().optional(),
     comment: z.string().optional(),
@@ -29,16 +28,17 @@ const historySchema = z.object({
 });
 
 interface TaskHistoryFormProps {
+    workspaceId: string;
     history?: TaskHistoryRead | null;
     onSuccess: () => void;
 }
 
-export default function TaskHistoryForm({ history, onSuccess }: TaskHistoryFormProps) {
+export default function TaskHistoryForm({ workspaceId, history, onSuccess }: TaskHistoryFormProps) {
     const form = useForm<z.infer<typeof historySchema>>({
         resolver: zodResolver(historySchema),
         defaultValues: {
             task_id: '',
-            event_type: 'UPDATE',
+            event_type: 'status_change',
             new_value: '',
             previous_value: '',
             comment: '',
@@ -50,7 +50,7 @@ export default function TaskHistoryForm({ history, onSuccess }: TaskHistoryFormP
         if (history) {
             form.reset({
                 task_id: history.task_id,
-                event_type: history.event_type,
+                event_type: history.event_type as any,
                 new_value: history.new_value,
                 previous_value: history.previous_value || '',
                 comment: history.comment || '',
@@ -59,7 +59,7 @@ export default function TaskHistoryForm({ history, onSuccess }: TaskHistoryFormP
         } else {
             form.reset({
                 task_id: '',
-                event_type: 'UPDATE',
+                event_type: 'status_change',
                 new_value: '',
                 previous_value: '',
                 comment: '',
@@ -68,21 +68,18 @@ export default function TaskHistoryForm({ history, onSuccess }: TaskHistoryFormP
         }
     }, [history, form]);
 
-    const createMutation = useMutation({
-        mutationFn: (data: TaskHistoryCreate) => TaskHistorieService.createTaskHistoryApiV1TaskHistoriesPost(data),
-        onSuccess: () => onSuccess(),
-    });
-
-    const updateMutation = useMutation({
-        mutationFn: (data: TaskHistoryUpdate) => TaskHistorieService.updateTaskHistoryApiV1TaskHistoriesTaskHistoryIdPut(history!.id, data),
-        onSuccess: () => onSuccess(),
-    });
+    const createMutation = useCreateTaskHistoryMutation(workspaceId);
+    const updateMutation = useUpdateTaskHistoryMutation(workspaceId, history?.id ?? '');
 
     function onSubmit(values: z.infer<typeof historySchema>) {
         if (history) {
-            updateMutation.mutate(values as TaskHistoryUpdate);
+            updateMutation.mutate(values as TaskHistoryUpdate, {
+                onSuccess: onSuccess,
+            });
         } else {
-            createMutation.mutate(values as TaskHistoryCreate);
+            createMutation.mutate(values as TaskHistoryCreate, {
+                onSuccess: onSuccess,
+            });
         }
     }
 
@@ -138,7 +135,7 @@ export default function TaskHistoryForm({ history, onSuccess }: TaskHistoryFormP
                         <FormItem>
                             <FormLabel>Previous Value</FormLabel>
                             <FormControl>
-                                <Input placeholder="Previous Value" {...field} />
+                                <Input placeholder="Previous Value" {...field} value={field.value ?? ''} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -166,14 +163,14 @@ export default function TaskHistoryForm({ history, onSuccess }: TaskHistoryFormP
                         <FormItem>
                             <FormLabel>Comment</FormLabel>
                             <FormControl>
-                                <Input placeholder="Comment" {...field} />
+                                <Input placeholder="Comment" {...field} value={field.value ?? ''} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
 
-                <Button type="submit">
+                <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
                     {history ? 'Update History' : 'Create History'}
                 </Button>
             </form>

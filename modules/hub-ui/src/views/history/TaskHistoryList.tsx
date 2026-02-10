@@ -10,19 +10,21 @@ import TaskHistoryForm from './TaskHistoryForm';
 import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus } from 'lucide-react';
 import { queryKeys } from '@/api/queryKeys';
+import { useParams } from 'react-router-dom';
 
 export default function TaskHistoryList() {
+    const { workspaceId } = useParams<{ workspaceId: string }>();
     const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
     const [selectedHistory, setSelectedHistory] = useState<TaskHistoryRead | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const queryClient = useQueryClient();
 
-    const { data } = useTaskHistoryListQuery({
+    const { data, isLoading } = useTaskHistoryListQuery(workspaceId!, {
         offset: pagination.pageIndex * pagination.pageSize,
         limit: pagination.pageSize,
     });
 
-    const deleteMutation = useDeleteTaskHistoryMutation();
+    const deleteMutation = useDeleteTaskHistoryMutation(workspaceId!);
 
     const handleEdit = (history: TaskHistoryRead) => {
         setSelectedHistory(history);
@@ -34,6 +36,11 @@ export default function TaskHistoryList() {
             deleteMutation.mutate(history.id);
         }
     };
+    
+    const handleFormSuccess = () => {
+        setIsDialogOpen(false);
+        queryClient.invalidateQueries({ queryKey: queryKeys.taskHistory.list(workspaceId!) });
+    };
 
     const handleOpenChange = (open: boolean) => {
         setIsDialogOpen(open);
@@ -41,6 +48,11 @@ export default function TaskHistoryList() {
     };
 
     const columns = getHistoryColumns({ onEdit: handleEdit, onDelete: handleDelete });
+    const pageCount = data ? Math.ceil((data.total_count ?? 0) / pagination.pageSize) : 0;
+    
+    if (!workspaceId) {
+        return <div>Invalid workspace.</div>
+    }
 
     return (
         <div className="space-y-4">
@@ -57,11 +69,9 @@ export default function TaskHistoryList() {
                             <DialogTitle>{selectedHistory ? 'Edit History' : 'Create History'}</DialogTitle>
                         </DialogHeader>
                         <TaskHistoryForm
+                            workspaceId={workspaceId}
                             history={selectedHistory}
-                            onSuccess={() => {
-                                setIsDialogOpen(false);
-                                queryClient.invalidateQueries({ queryKey: queryKeys.taskHistory.all });
-                            }}
+                            onSuccess={handleFormSuccess}
                         />
                     </DialogContent>
                 </Dialog>
@@ -70,9 +80,10 @@ export default function TaskHistoryList() {
             <DataTable
                 columns={columns}
                 data={data?.items || []}
-                pageCount={data ? Math.ceil((data.total_count ?? 0) / pagination.pageSize) : -1}
+                pageCount={pageCount}
                 pagination={pagination}
                 onPaginationChange={setPagination}
+                isLoading={isLoading}
             />
         </div>
     );

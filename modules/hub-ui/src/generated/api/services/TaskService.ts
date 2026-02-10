@@ -13,16 +13,21 @@ import { request as __request } from '../core/request';
 export class TaskService {
     /**
      * Create Task
+     * @param workspaceId
      * @param requestBody
      * @returns TaskRead Successful Response
      * @throws ApiError
      */
-    public static createTaskApiV1TasksPost(
+    public static createTaskApiV1WorkspaceWorkspaceIdTasksPost(
+        workspaceId: string,
         requestBody: TaskCreate,
     ): CancelablePromise<TaskRead> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/v1/tasks',
+            url: '/api/v1/workspace/{workspace_id}/tasks',
+            path: {
+                'workspace_id': workspaceId,
+            },
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -32,18 +37,23 @@ export class TaskService {
     }
     /**
      * Get Tasks
+     * @param workspaceId
      * @param offset offset for pagination
      * @param limit limit for pagination
      * @returns PaginatedList_TaskRead_ Successful Response
      * @throws ApiError
      */
-    public static getTasksApiV1TasksGet(
+    public static getTasksApiV1WorkspaceWorkspaceIdTasksGet(
+        workspaceId: string,
         offset?: number,
         limit: number = 100,
     ): CancelablePromise<PaginatedList_TaskRead_> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/tasks',
+            url: '/api/v1/workspace/{workspace_id}/tasks',
+            path: {
+                'workspace_id': workspaceId,
+            },
             query: {
                 'offset': offset,
                 'limit': limit,
@@ -55,17 +65,20 @@ export class TaskService {
     }
     /**
      * Get Task
+     * @param workspaceId
      * @param taskId
      * @returns TaskRead Successful Response
      * @throws ApiError
      */
-    public static getTaskApiV1TasksTaskIdGet(
+    public static getTaskApiV1WorkspaceWorkspaceIdTasksTaskIdGet(
+        workspaceId: string,
         taskId: string,
     ): CancelablePromise<TaskRead> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/tasks/{task_id}',
+            url: '/api/v1/workspace/{workspace_id}/tasks/{task_id}',
             path: {
+                'workspace_id': workspaceId,
                 'task_id': taskId,
             },
             errors: {
@@ -75,19 +88,22 @@ export class TaskService {
     }
     /**
      * Update Task
+     * @param workspaceId
      * @param taskId
      * @param requestBody
      * @returns TaskRead Successful Response
      * @throws ApiError
      */
-    public static updateTaskApiV1TasksTaskIdPut(
+    public static updateTaskApiV1WorkspaceWorkspaceIdTasksTaskIdPut(
+        workspaceId: string,
         taskId: string,
         requestBody: TaskUpdate,
     ): CancelablePromise<TaskRead> {
         return __request(OpenAPI, {
             method: 'PUT',
-            url: '/api/v1/tasks/{task_id}',
+            url: '/api/v1/workspace/{workspace_id}/tasks/{task_id}',
             path: {
+                'workspace_id': workspaceId,
                 'task_id': taskId,
             },
             body: requestBody,
@@ -99,17 +115,20 @@ export class TaskService {
     }
     /**
      * Delete Task
+     * @param workspaceId
      * @param taskId
      * @returns DeleteResponse Successful Response
      * @throws ApiError
      */
-    public static deleteTaskApiV1TasksTaskIdDelete(
+    public static deleteTaskApiV1WorkspaceWorkspaceIdTasksTaskIdDelete(
+        workspaceId: string,
         taskId: string,
     ): CancelablePromise<DeleteResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/v1/tasks/{task_id}',
+            url: '/api/v1/workspace/{workspace_id}/tasks/{task_id}',
             path: {
+                'workspace_id': workspaceId,
                 'task_id': taskId,
             },
             errors: {

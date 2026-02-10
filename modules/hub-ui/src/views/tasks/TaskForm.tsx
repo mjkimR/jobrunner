@@ -23,8 +23,7 @@ import {
 import type { TaskRead } from '@/generated/api/models/TaskRead';
 import type { TaskCreate } from '@/generated/api/models/TaskCreate';
 import type { TaskUpdate } from '@/generated/api/models/TaskUpdate';
-import { TaskService } from '@/generated/api/services/TaskService';
-import { useMutation } from '@tanstack/react-query';
+import { useCreateTaskMutation, useUpdateTaskMutation } from '@/api/queries/tasks';
 import { useEffect } from 'react';
 
 const taskSchema = z.object({
@@ -38,11 +37,12 @@ const taskSchema = z.object({
 });
 
 interface TaskFormProps {
+    workspaceId: string;
     task?: TaskRead | null;
     onSuccess: () => void;
 }
 
-export default function TaskForm({ task, onSuccess }: TaskFormProps) {
+export default function TaskForm({ workspaceId, task, onSuccess }: TaskFormProps) {
     const form = useForm<z.infer<typeof taskSchema>>({
         resolver: zodResolver(taskSchema),
         defaultValues: {
@@ -80,21 +80,18 @@ export default function TaskForm({ task, onSuccess }: TaskFormProps) {
         }
     }, [task, form]);
 
-    const createMutation = useMutation({
-        mutationFn: (data: TaskCreate) => TaskService.createTaskApiV1TasksPost(data),
-        onSuccess: () => onSuccess(),
-    });
-
-    const updateMutation = useMutation({
-        mutationFn: (data: TaskUpdate) => TaskService.updateTaskApiV1TasksTaskIdPut(task!.id, data),
-        onSuccess: () => onSuccess(),
-    });
+    const createMutation = useCreateTaskMutation(workspaceId);
+    const updateMutation = useUpdateTaskMutation(workspaceId, task?.id ?? '');
 
     function onSubmit(values: z.infer<typeof taskSchema>) {
         if (task) {
-            updateMutation.mutate(values as TaskUpdate);
+            updateMutation.mutate(values as TaskUpdate, {
+                onSuccess: onSuccess,
+            });
         } else {
-            createMutation.mutate(values as TaskCreate);
+            createMutation.mutate(values as TaskCreate, {
+                onSuccess: onSuccess,
+            });
         }
     }
 

@@ -15,8 +15,7 @@ import { Input } from '@/components/ui/input';
 import type { TaskTagRead } from '@/generated/api/models/TaskTagRead';
 import type { TaskTagCreate } from '@/generated/api/models/TaskTagCreate';
 import type { TaskTagUpdate } from '@/generated/api/models/TaskTagUpdate';
-import { TaskTagService } from '@/generated/api/services/TaskTagService';
-import { useMutation } from '@tanstack/react-query';
+import { useCreateTaskTagMutation, useUpdateTaskTagMutation } from '@/api/queries/taskTags';
 import { useEffect } from 'react';
 
 const tagSchema = z.object({
@@ -26,17 +25,18 @@ const tagSchema = z.object({
 });
 
 interface TaskTagFormProps {
+    workspaceId: string;
     tag?: TaskTagRead | null;
     onSuccess: () => void;
 }
 
-export default function TaskTagForm({ tag, onSuccess }: TaskTagFormProps) {
+export default function TaskTagForm({ workspaceId, tag, onSuccess }: TaskTagFormProps) {
     const form = useForm<z.infer<typeof tagSchema>>({
         resolver: zodResolver(tagSchema),
         defaultValues: {
             name: '',
             description: '',
-            color: '#000000',
+            color: '#888888',
         },
     });
 
@@ -45,32 +45,29 @@ export default function TaskTagForm({ tag, onSuccess }: TaskTagFormProps) {
             form.reset({
                 name: tag.name,
                 description: tag.description || '',
-                color: tag.color || '#000000',
+                color: tag.color || '#888888',
             });
         } else {
             form.reset({
                 name: '',
                 description: '',
-                color: '#000000',
+                color: '#888888',
             });
         }
     }, [tag, form]);
 
-    const createMutation = useMutation({
-        mutationFn: (data: TaskTagCreate) => TaskTagService.createTaskTagApiV1TaskTagsPost(data),
-        onSuccess: () => onSuccess(),
-    });
-
-    const updateMutation = useMutation({
-        mutationFn: (data: TaskTagUpdate) => TaskTagService.updateTaskTagApiV1TaskTagsTaskTagIdPut(tag!.id, data),
-        onSuccess: () => onSuccess(),
-    });
+    const createMutation = useCreateTaskTagMutation(workspaceId);
+    const updateMutation = useUpdateTaskTagMutation(workspaceId, tag?.id ?? '');
 
     function onSubmit(values: z.infer<typeof tagSchema>) {
         if (tag) {
-            updateMutation.mutate(values as TaskTagUpdate);
+            updateMutation.mutate(values as TaskTagUpdate, {
+                onSuccess: onSuccess,
+            });
         } else {
-            createMutation.mutate(values as TaskTagCreate);
+            createMutation.mutate(values as TaskTagCreate, {
+                onSuccess: onSuccess,
+            });
         }
     }
 
@@ -112,7 +109,7 @@ export default function TaskTagForm({ tag, onSuccess }: TaskTagFormProps) {
                             <FormControl>
                                 <div className="flex items-center gap-2">
                                     <Input type="color" className="w-12 p-1 h-10" {...field} />
-                                    <Input placeholder="#RRGGBB" {...field} />
+                                    <Input placeholder="#RRGGBB" {...field} value={field.value ?? ''} />
                                 </div>
                             </FormControl>
                             <FormMessage />
@@ -120,7 +117,7 @@ export default function TaskTagForm({ tag, onSuccess }: TaskTagFormProps) {
                     )}
                 />
 
-                <Button type="submit">
+                <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
                     {tag ? 'Update Tag' : 'Create Tag'}
                 </Button>
             </form>

@@ -10,19 +10,21 @@ import TaskForm from './TaskForm';
 import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus } from 'lucide-react';
 import { queryKeys } from '@/api/queryKeys';
+import { useParams } from 'react-router-dom';
 
 export default function TaskList() {
+    const { workspaceId } = useParams<{ workspaceId: string }>();
     const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
     const [selectedTask, setSelectedTask] = useState<TaskRead | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const queryClient = useQueryClient();
 
-    const { data } = useTasksQuery({
+    const { data, isLoading } = useTasksQuery(workspaceId!, {
         offset: pagination.pageIndex * pagination.pageSize,
         limit: pagination.pageSize,
     });
 
-    const deleteMutation = useDeleteTaskMutation();
+    const deleteMutation = useDeleteTaskMutation(workspaceId!);
 
     const handleEdit = (task: TaskRead) => {
         setSelectedTask(task);
@@ -34,6 +36,11 @@ export default function TaskList() {
             deleteMutation.mutate(task.id);
         }
     };
+    
+    const handleFormSuccess = () => {
+        setIsDialogOpen(false);
+        queryClient.invalidateQueries({ queryKey: queryKeys.tasks.list(workspaceId!) });
+    };
 
     const handleOpenChange = (open: boolean) => {
         setIsDialogOpen(open);
@@ -41,6 +48,11 @@ export default function TaskList() {
     };
 
     const columns = getColumns({ onEdit: handleEdit, onDelete: handleDelete });
+    const pageCount = data ? Math.ceil((data.total_count ?? 0) / pagination.pageSize) : 0;
+
+    if (!workspaceId) {
+        return <div>Invalid workspace.</div>
+    }
 
     return (
         <div className="space-y-4">
@@ -57,11 +69,9 @@ export default function TaskList() {
                             <DialogTitle>{selectedTask ? 'Edit Task' : 'Create Task'}</DialogTitle>
                         </DialogHeader>
                         <TaskForm
+                            workspaceId={workspaceId}
                             task={selectedTask}
-                            onSuccess={() => {
-                                setIsDialogOpen(false);
-                                queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
-                            }}
+                            onSuccess={handleFormSuccess}
                         />
                     </DialogContent>
                 </Dialog>
@@ -70,9 +80,10 @@ export default function TaskList() {
             <DataTable
                 columns={columns}
                 data={data?.items || []}
-                pageCount={data ? Math.ceil((data.total_count ?? 0) / pagination.pageSize) : -1}
+                pageCount={pageCount}
                 pagination={pagination}
                 onPaginationChange={setPagination}
+                isLoading={isLoading}
             />
         </div>
     );

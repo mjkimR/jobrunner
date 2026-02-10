@@ -13,16 +13,21 @@ import { request as __request } from '../core/request';
 export class TaskHistorieService {
     /**
      * Create Task History
+     * @param workspaceId
      * @param requestBody
      * @returns TaskHistoryRead Successful Response
      * @throws ApiError
      */
-    public static createTaskHistoryApiV1TaskHistoriesPost(
+    public static createTaskHistoryApiV1WorkspaceWorkspaceIdTaskHistoriesPost(
+        workspaceId: string,
         requestBody: TaskHistoryCreate,
     ): CancelablePromise<TaskHistoryRead> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/v1/task_histories',
+            url: '/api/v1/workspace/{workspace_id}/task_histories',
+            path: {
+                'workspace_id': workspaceId,
+            },
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -32,18 +37,23 @@ export class TaskHistorieService {
     }
     /**
      * Get Task Histories
+     * @param workspaceId
      * @param offset offset for pagination
      * @param limit limit for pagination
      * @returns PaginatedList_TaskHistoryRead_ Successful Response
      * @throws ApiError
      */
-    public static getTaskHistoriesApiV1TaskHistoriesGet(
+    public static getTaskHistoriesApiV1WorkspaceWorkspaceIdTaskHistoriesGet(
+        workspaceId: string,
         offset?: number,
         limit: number = 100,
     ): CancelablePromise<PaginatedList_TaskHistoryRead_> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/task_histories',
+            url: '/api/v1/workspace/{workspace_id}/task_histories',
+            path: {
+                'workspace_id': workspaceId,
+            },
             query: {
                 'offset': offset,
                 'limit': limit,
@@ -55,17 +65,20 @@ export class TaskHistorieService {
     }
     /**
      * Get Task History
+     * @param workspaceId
      * @param taskHistoryId
      * @returns TaskHistoryRead Successful Response
      * @throws ApiError
      */
-    public static getTaskHistoryApiV1TaskHistoriesTaskHistoryIdGet(
+    public static getTaskHistoryApiV1WorkspaceWorkspaceIdTaskHistoriesTaskHistoryIdGet(
+        workspaceId: string,
         taskHistoryId: string,
     ): CancelablePromise<TaskHistoryRead> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/task_histories/{task_history_id}',
+            url: '/api/v1/workspace/{workspace_id}/task_histories/{task_history_id}',
             path: {
+                'workspace_id': workspaceId,
                 'task_history_id': taskHistoryId,
             },
             errors: {
@@ -75,19 +88,22 @@ export class TaskHistorieService {
     }
     /**
      * Update Task History
+     * @param workspaceId
      * @param taskHistoryId
      * @param requestBody
      * @returns TaskHistoryRead Successful Response
      * @throws ApiError
      */
-    public static updateTaskHistoryApiV1TaskHistoriesTaskHistoryIdPut(
+    public static updateTaskHistoryApiV1WorkspaceWorkspaceIdTaskHistoriesTaskHistoryIdPut(
+        workspaceId: string,
         taskHistoryId: string,
         requestBody: TaskHistoryUpdate,
     ): CancelablePromise<TaskHistoryRead> {
         return __request(OpenAPI, {
             method: 'PUT',
-            url: '/api/v1/task_histories/{task_history_id}',
+            url: '/api/v1/workspace/{workspace_id}/task_histories/{task_history_id}',
             path: {
+                'workspace_id': workspaceId,
                 'task_history_id': taskHistoryId,
             },
             body: requestBody,
@@ -99,17 +115,20 @@ export class TaskHistorieService {
     }
     /**
      * Delete Task History
+     * @param workspaceId
      * @param taskHistoryId
      * @returns DeleteResponse Successful Response
      * @throws ApiError
      */
-    public static deleteTaskHistoryApiV1TaskHistoriesTaskHistoryIdDelete(
+    public static deleteTaskHistoryApiV1WorkspaceWorkspaceIdTaskHistoriesTaskHistoryIdDelete(
+        workspaceId: string,
         taskHistoryId: string,
     ): CancelablePromise<DeleteResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/v1/task_histories/{task_history_id}',
+            url: '/api/v1/workspace/{workspace_id}/task_histories/{task_history_id}',
             path: {
+                'workspace_id': workspaceId,
                 'task_history_id': taskHistoryId,
             },
             errors: {

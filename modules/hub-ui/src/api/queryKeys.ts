@@ -1,21 +1,27 @@
 export const queryKeys = {
   health: ['health'] as const,
+  workspaces: {
+    all: ['workspaces'] as const,
+    list: (params: { offset?: number; limit?: number } = {}) =>
+      ['workspaces', 'list', params] as const,
+    detail: (id: string) => ['workspaces', 'detail', id] as const,
+  },
   tasks: {
     all: ['tasks'] as const,
-    list: (params: { offset?: number; limit?: number } = {}) =>
-      ['tasks', 'list', params] as const,
-    detail: (id: string) => ['tasks', 'detail', id] as const,
+    list: (workspaceId: string, params: { offset?: number; limit?: number } = {}) =>
+      ['workspaces', workspaceId, 'tasks', 'list', params] as const,
+    detail: (workspaceId: string, id: string) => ['workspaces', workspaceId, 'tasks', 'detail', id] as const,
   },
   taskTags: {
     all: ['taskTags'] as const,
-    list: (params: { offset?: number; limit?: number } = {}) =>
-      ['taskTags', 'list', params] as const,
-    detail: (id: string) => ['taskTags', 'detail', id] as const,
+    list: (workspaceId: string, params: { offset?: number; limit?: number } = {}) =>
+      ['workspaces', workspaceId, 'taskTags', 'list', params] as const,
+    detail: (workspaceId: string, id: string) => ['workspaces', workspaceId, 'taskTags', 'detail', id] as const,
   },
   taskHistory: {
     all: ['taskHistory'] as const,
-    list: (params: { offset?: number; limit?: number } = {}) =>
-      ['taskHistory', 'list', params] as const,
-    detail: (id: string) => ['taskHistory', 'detail', id] as const,
+    list: (workspaceId: string, params: { offset?: number; limit?: number } = {}) =>
+      ['workspaces', workspaceId, 'taskHistory', 'list', params] as const,
+    detail: (workspaceId: string, id: string) => ['workspaces', workspaceId, 'taskHistory', 'detail', id] as const,
   },
 }

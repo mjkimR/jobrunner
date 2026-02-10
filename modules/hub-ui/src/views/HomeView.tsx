@@ -2,66 +2,79 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useTasksQuery } from '../api/queries/tasks'
 import { queryKeys } from '../api/queryKeys'
 import { useUiStore } from '../stores/uiStore'
+import { useParams } from 'react-router-dom'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 
 export default function HomeView() {
   const queryClient = useQueryClient()
+  const { workspaceId } = useParams<{ workspaceId: string }>();
   const lastRefreshAt = useUiStore((s) => s.lastRefreshAt)
   const setLastRefreshAt = useUiStore((s) => s.setLastRefreshAt)
 
-  const tasksQuery = useTasksQuery({ offset: 0, limit: 20 })
+  const tasksQuery = useTasksQuery(workspaceId!, { offset: 0, limit: 20 })
 
   const onRefresh = async () => {
-    await queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all })
+    if (!workspaceId) return;
+    await queryClient.invalidateQueries({ queryKey: queryKeys.tasks.list(workspaceId) })
     setLastRefreshAt(new Date())
   }
 
+  if (!workspaceId) {
+    return (
+      <div className="flex items-center justify-center h-full">
+          <Card className="w-full max-w-md text-center">
+              <CardHeader>
+                  <CardTitle>Welcome to JobRunner Hub</CardTitle>
+                  <CardDescription>
+                      Please select a workspace from the sidebar to get started.
+                  </CardDescription>
+              </CardHeader>
+          </Card>
+      </div>
+    )
+  }
+
   return (
-    <section style={{ display: 'grid', gap: 12, maxWidth: 960 }}>
-      <h1 style={{ margin: 0 }}>Home</h1>
-
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <button onClick={onRefresh} type="button">
-          Refresh
-        </button>
-        <small>
-          last refresh: {lastRefreshAt ? lastRefreshAt.toLocaleString() : '—'}
-        </small>
+    <div className="grid gap-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <div className="flex items-center gap-2">
+          <Button onClick={onRefresh} type="button" variant="outline" size="sm">
+            Refresh Tasks
+          </Button>
+          <p className="text-xs text-muted-foreground">
+            Last refresh: {lastRefreshAt ? lastRefreshAt.toLocaleString() : '—'}
+          </p>
+        </div>
       </div>
 
-      <div
-        style={{
-          padding: 12,
-          border: '1px solid #ddd',
-          borderRadius: 8,
-          background: '#fff',
-          color: '#111',
-        }}
-      >
-        {tasksQuery.isLoading && <div>Loading…</div>}
-        {tasksQuery.isError && (
-          <div>Failed: {(tasksQuery.error as Error).message}</div>
-        )}
-        {tasksQuery.data && (
-          <pre style={{ margin: 0 }}>
-            {JSON.stringify(
-              {
-                total_count: tasksQuery.data.total_count,
-                offset: tasksQuery.data.offset,
-                limit: tasksQuery.data.limit,
-                first: tasksQuery.data.first,
-                last: tasksQuery.data.last,
-                items: tasksQuery.data.items,
-              },
-              null,
-              2,
-            )}
-          </pre>
-        )}
-      </div>
-
-      <small style={{ opacity: 0.7 }}>
-        서버 상태(Task 목록)는 TanStack Query(+ OpenAPI codegen client), UI 전역 상태(lastRefreshAt)는 Zustand.
-      </small>
-    </section>
+      <Card>
+        <CardHeader>
+          <CardTitle>Task Summary</CardTitle>
+          <CardDescription>A brief overview of tasks in this workspace.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {tasksQuery.isLoading && <div>Loading…</div>}
+          {tasksQuery.isError && (
+            <div>Failed: {(tasksQuery.error as Error).message}</div>
+          )}
+          {tasksQuery.data && (
+            <pre className="p-4 rounded-md bg-muted text-sm overflow-x-auto">
+              {JSON.stringify(
+                {
+                  total_count: tasksQuery.data.total_count,
+                  offset: tasksQuery.data.offset,
+                  limit: tasksQuery.data.limit,
+                  items_in_page: tasksQuery.data.items.length,
+                },
+                null,
+                2,
+              )}
+            </pre>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   )
 }

@@ -7,6 +7,7 @@ import type { TaskPriority } from './TaskPriority';
 import type { TaskQueue } from './TaskQueue';
 import type { TaskSource } from './TaskSource';
 import type { TaskStatus } from './TaskStatus';
+import type { TaskTagRead } from './TaskTagRead';
 import type { TaskUrgency } from './TaskUrgency';
 /**
  * Schema for reading Task data.
@@ -67,5 +68,9 @@ export type TaskRead = {
      * Result summary
      */
     result_summary?: (string | null);
+    /**
+     * Associated tags
+     */
+    tags?: Array<TaskTagRead>;
 };
 
