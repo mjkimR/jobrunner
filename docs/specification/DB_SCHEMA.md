@@ -303,13 +303,13 @@ Agent 실행 이력. Configured Agent 및 Graph Agent 모두의 실행을 추적
 
 ---
 
-### 2.5. SkillRegistry
+### 2.5. AgentSkill
 
 Agent에 주입 가능한 Skill 카탈로그.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ skill_registry                                                              │
+│ agent_skills                                                                │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │ PK  id              UUID          NOT NULL                                  │
 │     name            VARCHAR(100)  NOT NULL  UNIQUE                          │
@@ -324,7 +324,24 @@ Agent에 주입 가능한 Skill 카탈로그.
 
 ---
 
-### 2.6. MCPRegistry
+### 2.6. AgentMCP
+
+Agent에 주입 가능한 MCP 카탈로그.
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ agent_mcp                                                                   │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ PK  id              UUID          NOT NULL                                  │
+│     name            VARCHAR(100)  NOT NULL  UNIQUE                          │
+│     description     TEXT          NULL                                      │
+│     mcp_path        VARCHAR(500)  NOT NULL  -- MCP.md 파일 경로              │
+│     version         VARCHAR(20)   NOT NULL  DEFAULT '1.0.0'                 │
+│     is_active       BOOLEAN       NOT NULL  DEFAULT true                    │
+│     created_at      TIMESTAMP     NOT NULL  DEFAULT now()                   │
+│     updated_at      TIMESTAMP     NOT NULL  DEFAULT now()                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
 
 ## 3. Gateway (Local Agent Gateway)
 
