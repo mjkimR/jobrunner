@@ -2,29 +2,28 @@ import pytest
 from app.platform.workspaces.models import Workspace
 from app.platform.workspaces.repos import WorkspaceRepository
 from app.tasks.task_tags.models import TaskTag
-from app.tasks.task_tags.repos import TaskTagRepository
 from app.tasks.task_tags.schemas import TaskTagCreate
-from app.tasks.task_tags.services import TaskTagContextKwargs, TaskTagService
+from app.tasks.task_tags.services import TaskTagContextKwargs
 from app.tasks.task_tags.usecases.crud import CreateTaskTagUseCase
 from sqlalchemy.ext.asyncio import AsyncSession
 from tests.utils.fastapi import resolve_dependency
 
 
 @pytest.mark.integrate
-class TestTaskTagsIntegration:
-    async def test_create_task_tag_via_use_case(
+class TestCreateTaskTag:
+    async def test_create_task_tag_success(
         self,
         session: AsyncSession,
         make_db,
     ):
-        # Create a workspace as parent resource
         workspace: Workspace = await make_db(WorkspaceRepository, is_default=False)
-
-        # Use resolve_dependency to automatically resolve dependencies
         use_case = resolve_dependency(CreateTaskTagUseCase)
+
         task_tag_in = TaskTagCreate(name="Integration Tag", description="Created via integration test", color="#AABBCC")
         context: TaskTagContextKwargs = {"parent_id": workspace.id}
-        created_task_tag = await use_case._execute(session, task_tag_in, context=context)
+
+        # Using public API .execute()
+        created_task_tag = await use_case.execute(task_tag_in, context=context)
 
         assert created_task_tag.name == "Integration Tag"
         assert created_task_tag.description == "Created via integration test"
@@ -36,24 +35,23 @@ class TestTaskTagsIntegration:
         assert db_task_tag.name == "Integration Tag"
         assert db_task_tag.workspace_id == workspace.id
 
-    async def test_get_task_tag_via_service(
+    async def test_create_duplicate_task_tag_fails(
         self,
         session: AsyncSession,
         make_db,
     ):
         workspace: Workspace = await make_db(WorkspaceRepository, is_default=False)
-        task_tag: TaskTag = await make_db(
-            TaskTagRepository,
-            workspace_id=workspace.id,
-            name="Get Integration Tag",
-            description="To be fetched",
-            color="#CCDDEE",
-        )
+        use_case = resolve_dependency(CreateTaskTagUseCase)
 
-        service = resolve_dependency(TaskTagService)
-        # Service can be used directly for simple GET operations
-        retrieved_task_tag = await service.get(session, task_tag.id, context={"parent_id": workspace.id})
+        # Create first tag
+        task_tag_in = TaskTagCreate(name="Duplicate Tag", color="#111111")
+        context: TaskTagContextKwargs = {"parent_id": workspace.id}
+        await use_case.execute(task_tag_in, context=context)
 
-        assert retrieved_task_tag is not None
-        assert retrieved_task_tag.id == task_tag.id
-        assert retrieved_task_tag.name == "Get Integration Tag"
+        # Attempt to create duplicate
+        with (
+            pytest.raises(Exception) as excinfo
+        ):  # Catch generic exception first to see what it is, then refine if needed. AppBase usually raises specialized exceptions.
+            await use_case.execute(task_tag_in, context=context)
+
+        assert "TaskTag with this name already exists" in str(excinfo.value)
