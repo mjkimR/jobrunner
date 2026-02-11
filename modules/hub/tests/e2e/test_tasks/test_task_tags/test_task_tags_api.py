@@ -35,7 +35,7 @@ class TestTaskTagsAPI:
     ):
         workspace: Workspace = await make_db(WorkspaceRepository, is_default=False)
         await make_db(
-            TaskTag,
+            TaskTagRepository,
             workspace_id=workspace.id,
             name="Existing Tag",
             description="Desc",

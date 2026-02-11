@@ -2,12 +2,14 @@ from uuid import UUID
 
 import pytest
 from app.platform.workspaces.models import Workspace
+from app.platform.workspaces.repos import WorkspaceRepository
 from app.tasks.task_histories.models import TaskHistory
+from app.tasks.task_histories.repos import TaskHistoryRepository
 from app.tasks.task_histories.schemas import TaskHistoryCreate
-from app.tasks.task_histories.services import TaskHistoryService
+from app.tasks.task_histories.services import TaskHistoryContextKwargs, TaskHistoryService
 from app.tasks.task_histories.usecases.crud import CreateTaskHistoryUseCase
 from app.tasks.tasks.models import Task
-from app.tasks.tasks.schemas import TaskCreate
+from app.tasks.tasks.repos import TaskRepository
 from app_base.base.exceptions.basic import NotFoundException
 from sqlalchemy.ext.asyncio import AsyncSession
 from tests.utils.fastapi import resolve_dependency
@@ -21,9 +23,8 @@ class TestTaskHistoriesIntegration:
         make_db,
     ):
         # Create a workspace and task as parent resources
-        workspace: Workspace = await make_db(Workspace)
-        task_create_data = TaskCreate(title="Integration Task", tags=[])
-        task: Task = await make_db(Task, workspace_id=workspace.id, **task_create_data.model_dump(exclude={"tags"}))
+        workspace: Workspace = await make_db(WorkspaceRepository, is_default=False)
+        task: Task = await make_db(TaskRepository, workspace_id=workspace.id)
         use_case = resolve_dependency(CreateTaskHistoryUseCase)
 
         task_history_in = TaskHistoryCreate(
@@ -35,7 +36,7 @@ class TestTaskHistoriesIntegration:
             comment="Task started during integration test",
         )
 
-        context = {"parent_id": workspace.id}
+        context: TaskHistoryContextKwargs = {"parent_id": workspace.id}
         created_task_history = await use_case._execute(session, task_history_in, context=context)
 
         assert created_task_history.task_id == task.id
@@ -55,12 +56,11 @@ class TestTaskHistoriesIntegration:
         session: AsyncSession,
         make_db,
     ):
-        workspace: Workspace = await make_db(Workspace)
-        task_create_data = TaskCreate(title="Integration Get Task", tags=[])
-        task: Task = await make_db(Task, workspace_id=workspace.id, **task_create_data.model_dump(exclude={"tags"}))
+        workspace: Workspace = await make_db(WorkspaceRepository, is_default=False)
+        task: Task = await make_db(TaskRepository, workspace_id=workspace.id)
 
         task_history: TaskHistory = await make_db(
-            TaskHistory,
+            TaskHistoryRepository,
             workspace_id=workspace.id,
             task_id=task.id,
             event_type="assignment",
@@ -70,7 +70,7 @@ class TestTaskHistoriesIntegration:
 
         service = resolve_dependency(TaskHistoryService)
 
-        context = {"parent_id": workspace.id}
+        context: TaskHistoryContextKwargs = {"parent_id": workspace.id}
         retrieved_task_history = await service.get(session, task_history.id, context=context)
 
         assert retrieved_task_history is not None

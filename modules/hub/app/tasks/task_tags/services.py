@@ -72,7 +72,7 @@ class TaskTagService(
             )
 
     async def get_or_create_tags(
-        self, session: AsyncSession, tag_names: list[str], context: TaskTagContextKwargs
+        self, session: AsyncSession, tag_names: list[str], context: TaskTagContextKwargs | None
     ) -> list[TaskTag]:
         """Get existing tags or create new ones from a list of names."""
         tags = []
@@ -80,6 +80,9 @@ class TaskTagService(
             normalized_name = name.strip()
             if not normalized_name:
                 continue
+
+            if context is None:
+                raise ValueError("Context is required for get_or_create_tags")
 
             tag = await self.repo.get_by_name(session, normalized_name, context["parent_id"])
             if not tag:

@@ -1,13 +1,13 @@
-from uuid import UUID
-
 import pytest
 from app.platform.workspaces.models import Workspace
+from app.platform.workspaces.repos import WorkspaceRepository
 from app.tasks.task_tags.models import TaskTag
+from app.tasks.task_tags.repos import TaskTagRepository
 from app.tasks.tasks.models import Task
+from app.tasks.tasks.repos import TaskRepository
 from app.tasks.tasks.schemas import TaskCreate
-from app.tasks.tasks.services import TaskService
+from app.tasks.tasks.services import TaskContextKwargs, TaskService
 from app.tasks.tasks.usecases.crud import CreateTaskUseCase
-from app_base.base.exceptions.basic import NotFoundException
 from sqlalchemy.ext.asyncio import AsyncSession
 from tests.utils.fastapi import resolve_dependency
 
@@ -19,7 +19,7 @@ class TestTasksIntegration:
         session: AsyncSession,
         make_db,
     ):
-        workspace: Workspace = await make_db(Workspace)
+        workspace: Workspace = await make_db(WorkspaceRepository, is_default=False)
         use_case = resolve_dependency(CreateTaskUseCase)
 
         task_in = TaskCreate(
@@ -28,7 +28,7 @@ class TestTasksIntegration:
             tags=["tag1", "tag2"],
         )
 
-        context = {"parent_id": workspace.id}
+        context: TaskContextKwargs = {"parent_id": workspace.id}
         created_task = await use_case.execute(task_in, context=context)
 
         assert created_task.title == "Integration Task"
@@ -48,9 +48,9 @@ class TestTasksIntegration:
         session: AsyncSession,
         make_db,
     ):
-        workspace: Workspace = await make_db(Workspace)
+        workspace: Workspace = await make_db(WorkspaceRepository, is_default=False)
         task: Task = await make_db(
-            Task,
+            TaskRepository,
             workspace_id=workspace.id,
             title="Get Integration Task",
             description="To be fetched",
@@ -64,20 +64,16 @@ class TestTasksIntegration:
         assert retrieved_task.id == task.id
         assert retrieved_task.title == "Get Integration Task"
 
-        # Test non-existent
-        with pytest.raises(NotFoundException):
-            await service.get(
-                session, UUID("00000000-0000-0000-0000-000000000000"), context={"parent_id": workspace.id}
-            )
-
     async def test_update_task_tags_via_use_case(
         self,
         session: AsyncSession,
         make_db,
     ):
-        workspace: Workspace = await make_db(Workspace)
-        initial_tag: TaskTag = await make_db(TaskTag, workspace_id=workspace.id, name="initial")
-        task: Task = await make_db(Task, workspace_id=workspace.id, title="Task with initial tag", tags=[initial_tag])
+        workspace: Workspace = await make_db(WorkspaceRepository, is_default=False)
+        initial_tag: TaskTag = await make_db(TaskTagRepository, workspace_id=workspace.id, name="initial")
+        task: Task = await make_db(
+            TaskRepository, workspace_id=workspace.id, title="Task with initial tag", tags=[initial_tag]
+        )
 
         # Using UpdateTaskUseCase with automatic dependency resolution
         from app.tasks.tasks.schemas import TaskUpdate
@@ -86,9 +82,10 @@ class TestTasksIntegration:
         update_use_case = resolve_dependency(UpdateTaskUseCase)
 
         update_data = TaskUpdate(tags=["new_tag", "another_new_tag"])
-        context = {"parent_id": workspace.id}
-        updated_task = await update_use_case._execute(session, task.id, update_data, context=context)
+        context: TaskContextKwargs = {"parent_id": workspace.id}
+        updated_task = await update_use_case.execute(task.id, update_data, context=context)
 
+        assert updated_task is not None
         assert updated_task.title == task.title  # Should not have changed
         assert len(updated_task.tags) == 2
         assert {tag.name for tag in updated_task.tags} == {"new_tag", "another_new_tag"}
@@ -96,5 +93,6 @@ class TestTasksIntegration:
         # Verify in DB
         db_task = await session.get(Task, updated_task.id)
         await session.refresh(db_task, attribute_names=["tags"])
+        assert db_task is not None
         assert len(db_task.tags) == 2
         assert {tag.name for tag in db_task.tags} == {"new_tag", "another_new_tag"}

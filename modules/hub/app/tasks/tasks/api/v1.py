@@ -2,7 +2,7 @@ from typing import Annotated
 from uuid import UUID
 
 from app.tasks.tasks.schemas import TaskCreate, TaskRead, TaskUpdate
-from app.tasks.tasks.services import TagContextKwargs
+from app.tasks.tasks.services import TaskContextKwargs
 from app.tasks.tasks.usecases.crud import (
     CreateTaskUseCase,
     DeleteTaskUseCase,
@@ -25,7 +25,7 @@ async def create_task(
     use_case: Annotated[CreateTaskUseCase, Depends()],
     task_in: TaskCreate,
 ):
-    context: TagContextKwargs = {"parent_id": workspace_id}
+    context: TaskContextKwargs = {"parent_id": workspace_id}
     return await use_case.execute(task_in, context)
 
 
@@ -35,7 +35,7 @@ async def get_tasks(
     use_case: Annotated[GetMultiTaskUseCase, Depends()],
     pagination: PaginationParam,
 ):
-    context: TagContextKwargs = {"parent_id": workspace_id}
+    context: TaskContextKwargs = {"parent_id": workspace_id}
     return await use_case.execute(**pagination, context=context)
 
 
@@ -45,7 +45,7 @@ async def get_task(
     use_case: Annotated[GetTaskUseCase, Depends()],
     task_id: UUID,
 ):
-    context: TagContextKwargs = {"parent_id": workspace_id}
+    context: TaskContextKwargs = {"parent_id": workspace_id}
     task = await use_case.execute(task_id, context=context)
     if not task:
         raise NotFoundException()
@@ -59,7 +59,7 @@ async def update_task(
     task_id: UUID,
     task_in: TaskUpdate,
 ):
-    context: TagContextKwargs = {"parent_id": workspace_id}
+    context: TaskContextKwargs = {"parent_id": workspace_id}
     task = await use_case.execute(task_id, task_in, context=context)
     if not task:
         raise NotFoundException()
@@ -72,5 +72,5 @@ async def delete_task(
     use_case: Annotated[DeleteTaskUseCase, Depends()],
     task_id: UUID,
 ):
-    context: TagContextKwargs = {"parent_id": workspace_id}
+    context: TaskContextKwargs = {"parent_id": workspace_id}
     return await use_case.execute(task_id, context=context)

@@ -4,7 +4,7 @@ from uuid import UUID
 from app.tasks.task_tags.services import TaskTagService
 from app.tasks.tasks.models import Task
 from app.tasks.tasks.schemas import TaskCreate, TaskDbCreate, TaskDbUpdate, TaskUpdate
-from app.tasks.tasks.services import TagContextKwargs, TaskService
+from app.tasks.tasks.services import TaskContextKwargs, TaskService
 from app_base.base.usecases.crud import (
     BaseCreateUseCase,
     BaseDeleteUseCase,
@@ -16,24 +16,24 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-class GetTaskUseCase(BaseGetUseCase[TaskService, Task, TagContextKwargs]):
+class GetTaskUseCase(BaseGetUseCase[TaskService, Task, TaskContextKwargs]):
     def __init__(self, service: Annotated[TaskService, Depends()]) -> None:
         super().__init__(service)
 
 
-class GetMultiTaskUseCase(BaseGetMultiUseCase[TaskService, Task, TagContextKwargs]):
+class GetMultiTaskUseCase(BaseGetMultiUseCase[TaskService, Task, TaskContextKwargs]):
     def __init__(self, service: Annotated[TaskService, Depends()]) -> None:
         super().__init__(service)
 
 
-class CreateTaskUseCase(BaseCreateUseCase[TaskService, Task, TaskCreate, TagContextKwargs]):
+class CreateTaskUseCase(BaseCreateUseCase[TaskService, Task, TaskCreate, TaskContextKwargs]):
     def __init__(
         self, service: Annotated[TaskService, Depends()], tag_service: Annotated[TaskTagService, Depends()]
     ) -> None:
         super().__init__(service)
         self.tag_service = tag_service
 
-    async def _execute(self, session: AsyncSession, obj_data: TaskCreate, context: Optional[TagContextKwargs]) -> Task:
+    async def _execute(self, session: AsyncSession, obj_data: TaskCreate, context: Optional[TaskContextKwargs]) -> Task:
         # Get or create tag objects
         tags = obj_data.tags
         tag_objects = await self.tag_service.get_or_create_tags(session, tags, context)
@@ -44,7 +44,7 @@ class CreateTaskUseCase(BaseCreateUseCase[TaskService, Task, TaskCreate, TagCont
         return await self.service.create(session, db_obj, context=context, tags=tag_objects)
 
 
-class UpdateTaskUseCase(BaseUpdateUseCase[TaskService, Task, TaskUpdate, TagContextKwargs]):
+class UpdateTaskUseCase(BaseUpdateUseCase[TaskService, Task, TaskUpdate, TaskContextKwargs]):
     def __init__(
         self, service: Annotated[TaskService, Depends()], tag_service: Annotated[TaskTagService, Depends()]
     ) -> None:
@@ -52,7 +52,7 @@ class UpdateTaskUseCase(BaseUpdateUseCase[TaskService, Task, TaskUpdate, TagCont
         self.tag_service = tag_service
 
     async def _execute(
-        self, session: AsyncSession, obj_id: UUID, obj_data: TaskUpdate, context: Optional[TagContextKwargs]
+        self, session: AsyncSession, obj_id: UUID, obj_data: TaskUpdate, context: Optional[TaskContextKwargs]
     ) -> Task | None:
         # Get or create tag objects
         tags = obj_data.tags
@@ -66,6 +66,6 @@ class UpdateTaskUseCase(BaseUpdateUseCase[TaskService, Task, TaskUpdate, TagCont
         return await self.service.update(session, obj_id, db_obj, context, tags=tag_objects)
 
 
-class DeleteTaskUseCase(BaseDeleteUseCase[TaskService, Task, TagContextKwargs]):
+class DeleteTaskUseCase(BaseDeleteUseCase[TaskService, Task, TaskContextKwargs]):
     def __init__(self, service: Annotated[TaskService, Depends()]) -> None:
         super().__init__(service)

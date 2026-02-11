@@ -2,9 +2,11 @@ from uuid import UUID
 
 import pytest
 from app.platform.workspaces.models import Workspace
+from app.platform.workspaces.repos import WorkspaceRepository
 from app.tasks.task_tags.models import TaskTag
+from app.tasks.task_tags.repos import TaskTagRepository
 from app.tasks.task_tags.schemas import TaskTagCreate
-from app.tasks.task_tags.services import TaskTagService
+from app.tasks.task_tags.services import TaskTagContextKwargs, TaskTagService
 from app.tasks.task_tags.usecases.crud import CreateTaskTagUseCase
 from app_base.base.exceptions.basic import NotFoundException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,14 +21,12 @@ class TestTaskTagsIntegration:
         make_db,
     ):
         # Create a workspace as parent resource
-        workspace: Workspace = await make_db(Workspace)
+        workspace: Workspace = await make_db(WorkspaceRepository, is_default=False)
 
         # Use resolve_dependency to automatically resolve dependencies
         use_case = resolve_dependency(CreateTaskTagUseCase)
-
         task_tag_in = TaskTagCreate(name="Integration Tag", description="Created via integration test", color="#AABBCC")
-
-        context = {"parent_id": workspace.id}
+        context: TaskTagContextKwargs = {"parent_id": workspace.id}
         created_task_tag = await use_case._execute(session, task_tag_in, context=context)
 
         assert created_task_tag.name == "Integration Tag"
@@ -44,9 +44,9 @@ class TestTaskTagsIntegration:
         session: AsyncSession,
         make_db,
     ):
-        workspace: Workspace = await make_db(Workspace)
+        workspace: Workspace = await make_db(WorkspaceRepository, is_default=False)
         task_tag: TaskTag = await make_db(
-            TaskTag,
+            TaskTagRepository,
             workspace_id=workspace.id,
             name="Get Integration Tag",
             description="To be fetched",

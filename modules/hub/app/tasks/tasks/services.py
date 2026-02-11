@@ -19,18 +19,18 @@ from app_base.base.services.nested_resource_hook import NestedResourceContextKwa
 from fastapi import Depends
 
 
-class TagContextKwargs(NestedResourceContextKwargs):
+class TaskContextKwargs(NestedResourceContextKwargs):
     pass
 
 
 class TaskService(
     NestedResourceHooksMixin,  # Relationship with Workspace
     ExistsCheckHooksMixin,  # Ensure existence checks before operations
-    BaseCreateServiceMixin[TaskRepository, Task, TaskDbCreate, TagContextKwargs],
-    BaseGetMultiServiceMixin[TaskRepository, Task, TagContextKwargs],
-    BaseGetServiceMixin[TaskRepository, Task, TagContextKwargs],
-    BaseUpdateServiceMixin[TaskRepository, Task, TaskDbUpdate, TagContextKwargs],
-    BaseDeleteServiceMixin[TaskRepository, Task, TagContextKwargs],
+    BaseCreateServiceMixin[TaskRepository, Task, TaskDbCreate, TaskContextKwargs],
+    BaseGetMultiServiceMixin[TaskRepository, Task, TaskContextKwargs],
+    BaseGetServiceMixin[TaskRepository, Task, TaskContextKwargs],
+    BaseUpdateServiceMixin[TaskRepository, Task, TaskDbUpdate, TaskContextKwargs],
+    BaseDeleteServiceMixin[TaskRepository, Task, TaskContextKwargs],
 ):
     """Service for Task business logic."""
 
@@ -52,7 +52,7 @@ class TaskService(
 
     @property
     def context_model(self):
-        return TagContextKwargs
+        return TaskContextKwargs
 
     @property
     def fk_name(self) -> str:

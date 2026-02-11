@@ -1,16 +1,16 @@
 from typing import Any, Type, TypeVar, get_args
 
 import pytest
+from app_base.base.models.mixin import Base
 from app_base.base.repos.base import BaseRepository
 from httpx import AsyncClient
 from polyfactory.factories.pydantic_factory import ModelFactory
 from pydantic import BaseModel
-from pytest_asyncio import fixture
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tests.utils.fastapi import resolve_dependency
 
-T = TypeVar("T")
+T = TypeVar("T", bound=BaseModel)
 
 
 @pytest.fixture
@@ -48,6 +48,8 @@ def make_batch():
 
 def _find_generic_args(repo_class: type[BaseRepository]) -> type[BaseModel]:
     """Extract generic type arguments from a BaseRepository subclass."""
+    if not issubclass(repo_class, BaseRepository):
+        raise ValueError(f"{repo_class.__name__} is not a subclass of BaseRepository.")
     if not hasattr(repo_class, "__orig_bases__"):
         raise ValueError(f"{repo_class.__name__} does not have __orig_bases__ attribute.")
     orig_bases = repo_class.__orig_bases__  # type: ignore
@@ -67,7 +69,7 @@ def make_db(session: AsyncSession):
     Returns the created SQLAlchemy model instance after saving to the database.
     """
 
-    async def _make_db(repo_class_or_instance: type[BaseRepository] | BaseRepository, **kwargs: Any) -> Any:
+    async def _make_db(repo_class_or_instance: type[BaseRepository] | BaseRepository, **kwargs: Any) -> Base:
         if not isinstance(repo_class_or_instance, type):
             repo_class = type(repo_class_or_instance)
             repo = repo_class_or_instance
@@ -96,7 +98,7 @@ def make_db_batch(session: AsyncSession):
 
     async def _make_db_batch(
         repo_class_or_instance: BaseRepository | type[BaseRepository], _size: int = 3, **kwargs: Any
-    ) -> list[T]:
+    ) -> list[Base]:
         if not isinstance(repo_class_or_instance, type):
             repo_class = type(repo_class_or_instance)
             repo = repo_class_or_instance
@@ -114,7 +116,7 @@ def make_db_batch(session: AsyncSession):
     return _make_db_batch
 
 
-@fixture
+@pytest.fixture
 def make_api(client: AsyncClient):
     """API model factory fixture.
 
@@ -134,7 +136,7 @@ def make_api(client: AsyncClient):
     return _make_api
 
 
-@fixture
+@pytest.fixture
 def make_api_batch(client: AsyncClient):
     """API model batch factory fixture.
 
