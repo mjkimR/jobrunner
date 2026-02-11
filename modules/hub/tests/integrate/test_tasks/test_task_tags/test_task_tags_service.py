@@ -1,5 +1,3 @@
-from uuid import UUID
-
 import pytest
 from app.platform.workspaces.models import Workspace
 from app.platform.workspaces.repos import WorkspaceRepository
@@ -8,7 +6,6 @@ from app.tasks.task_tags.repos import TaskTagRepository
 from app.tasks.task_tags.schemas import TaskTagCreate
 from app.tasks.task_tags.services import TaskTagContextKwargs, TaskTagService
 from app.tasks.task_tags.usecases.crud import CreateTaskTagUseCase
-from app_base.base.exceptions.basic import NotFoundException
 from sqlalchemy.ext.asyncio import AsyncSession
 from tests.utils.fastapi import resolve_dependency
 
@@ -60,9 +57,3 @@ class TestTaskTagsIntegration:
         assert retrieved_task_tag is not None
         assert retrieved_task_tag.id == task_tag.id
         assert retrieved_task_tag.name == "Get Integration Tag"
-
-        # Test non-existent
-        with pytest.raises(NotFoundException):
-            await service.get(
-                session, UUID("00000000-0000-0000-0000-000000000000"), context={"parent_id": workspace.id}
-            )

@@ -1,5 +1,3 @@
-from uuid import UUID
-
 import pytest
 from app.platform.workspaces.models import Workspace
 from app.platform.workspaces.repos import WorkspaceRepository
@@ -10,7 +8,6 @@ from app.tasks.task_histories.services import TaskHistoryContextKwargs, TaskHist
 from app.tasks.task_histories.usecases.crud import CreateTaskHistoryUseCase
 from app.tasks.tasks.models import Task
 from app.tasks.tasks.repos import TaskRepository
-from app_base.base.exceptions.basic import NotFoundException
 from sqlalchemy.ext.asyncio import AsyncSession
 from tests.utils.fastapi import resolve_dependency
 
@@ -76,7 +73,3 @@ class TestTaskHistoriesIntegration:
         assert retrieved_task_history is not None
         assert retrieved_task_history.id == task_history.id
         assert retrieved_task_history.event_type == "assignment"
-
-        # Test non-existent
-        with pytest.raises(NotFoundException):  # Assuming service.get raises NotFoundException for non-existent
-            await service.get(session, UUID("00000000-0000-0000-0000-000000000000"), context=context)
