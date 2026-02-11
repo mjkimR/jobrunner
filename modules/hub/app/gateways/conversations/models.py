@@ -10,7 +10,7 @@ from uuid import UUID
 
 from app_base.base.models.mixin import Base, TimestampMixin, UUIDMixin
 from sqlalchemy import DateTime, ForeignKey, String, func
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
@@ -27,7 +27,7 @@ class Conversation(Base, UUIDMixin, TimestampMixin):
     title: Mapped[str | None] = mapped_column(String(255), nullable=True)
     channel: Mapped[str] = mapped_column(String(50), nullable=False, default="web")
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="active")
-    context: Mapped[dict] = mapped_column(JSONB, nullable=False, default={})
+    context: Mapped[dict] = mapped_column(JSON, nullable=False, default={})
     started_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=func.now())
     ended_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 

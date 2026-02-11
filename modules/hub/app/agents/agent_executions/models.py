@@ -11,7 +11,7 @@ from uuid import UUID
 from app.agents.agent_executions.enum import AgentExecutionStatus
 from app_base.base.models.mixin import Base, TimestampMixin, UUIDMixin
 from sqlalchemy import DateTime, ForeignKey, String, Text
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
@@ -35,8 +35,8 @@ class AgentExecution(Base, UUIDMixin, TimestampMixin):
     status: Mapped[str] = mapped_column(String(50), nullable=False, default=AgentExecutionStatus.PENDING)
 
     # Data
-    input_data: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
-    output_data: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+    input_data: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
+    output_data: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Timing
@@ -44,7 +44,7 @@ class AgentExecution(Base, UUIDMixin, TimestampMixin):
     completed_at: Mapped[datetime.datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Usage
-    token_usage: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+    token_usage: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
     dagster_run_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
     # Relationships

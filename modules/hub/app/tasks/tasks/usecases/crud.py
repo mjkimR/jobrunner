@@ -36,7 +36,7 @@ class CreateTaskUseCase(BaseCreateUseCase[TaskService, Task, TaskCreate, TagCont
     async def _execute(self, session: AsyncSession, obj_data: TaskCreate, context: Optional[TagContextKwargs]) -> Task:
         # Get or create tag objects
         tags = obj_data.tags
-        tag_objects = await self.tag_service.get_or_create_tags(session, tags)
+        tag_objects = await self.tag_service.get_or_create_tags(session, tags, context)
 
         # Create Task
         db_obj = TaskDbCreate.model_validate(obj_data.model_dump(exclude={"tags"}))
@@ -57,7 +57,7 @@ class UpdateTaskUseCase(BaseUpdateUseCase[TaskService, Task, TaskUpdate, TagCont
         # Get or create tag objects
         tags = obj_data.tags
         if tags is not None:
-            tag_objects = await self.tag_service.get_or_create_tags(session, tags)
+            tag_objects = await self.tag_service.get_or_create_tags(session, tags, context)
         else:
             tag_objects = None
 

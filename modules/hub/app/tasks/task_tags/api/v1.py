@@ -45,7 +45,7 @@ async def get_task_tag(
     use_case: Annotated[GetTaskTagUseCase, Depends()],
     task_tag_id: UUID,
 ):
-    context = {"workspace_id": workspace_id}
+    context: TaskTagContextKwargs = {"parent_id": workspace_id}
     task_tag = await use_case.execute(task_tag_id, context=context)
     if not task_tag:
         raise NotFoundException()

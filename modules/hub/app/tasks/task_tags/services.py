@@ -71,7 +71,9 @@ class TaskTagService(
                 "TaskTag with this name already exists in the workspace.",
             )
 
-    async def get_or_create_tags(self, session: AsyncSession, tag_names: list[str]) -> list[TaskTag]:
+    async def get_or_create_tags(
+        self, session: AsyncSession, tag_names: list[str], context: TaskTagContextKwargs
+    ) -> list[TaskTag]:
         """Get existing tags or create new ones from a list of names."""
         tags = []
         for name in tag_names:
@@ -79,10 +81,10 @@ class TaskTagService(
             if not normalized_name:
                 continue
 
-            tag = await self.repo.get_by_name(session, normalized_name)
+            tag = await self.repo.get_by_name(session, normalized_name, context["parent_id"])
             if not tag:
                 # Create new tag
                 tag_create = TaskTagCreate(name=normalized_name)
-                tag = await self.create(session, tag_create)
+                tag = await self.create(session, tag_create, context)
             tags.append(tag)
         return tags
