@@ -1,16 +1,32 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useTasksQuery } from '../api/queries/tasks'
+import { useWorkspacesQuery } from '../api/queries/workspaces'
 import { queryKeys } from '../api/queryKeys'
 import { useUiStore } from '../stores/uiStore'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { useEffect } from 'react'
 
 export default function HomeView() {
   const queryClient = useQueryClient()
   const { workspaceId } = useParams<{ workspaceId: string }>();
+  const navigate = useNavigate();
   const lastRefreshAt = useUiStore((s) => s.lastRefreshAt)
   const setLastRefreshAt = useUiStore((s) => s.setLastRefreshAt)
+
+  const { data: workspacesData } = useWorkspacesQuery()
+  const workspaces = workspacesData?.items ?? []
+
+  // Redirect to default workspace if at root
+  useEffect(() => {
+    if (!workspaceId && workspaces.length > 0) {
+        const defaultWorkspace = workspaces.find(w => w.is_default) ?? workspaces[0];
+        if (defaultWorkspace) {
+            navigate(`/workspaces/${defaultWorkspace.id}/tasks`, { replace: true })
+        }
+    }
+  }, [workspaceId, workspaces, navigate])
 
   const tasksQuery = useTasksQuery(workspaceId!, { offset: 0, limit: 20 })
 

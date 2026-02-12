@@ -23,21 +23,15 @@ export function WorkspaceSelector({ className }: { className?: string }) {
         }
     }, [currentWorkspaceId, activeWorkspaceId, setActiveWorkspaceId])
 
-
-    // Set default active workspace if not set and navigate
-    useEffect(() => {
-        if (!currentWorkspaceId && workspaces.length > 0) {
-            const defaultWorkspace = workspaces.find(w => w.is_default) ?? workspaces[0];
-            if (defaultWorkspace) {
-                navigate(`/workspaces/${defaultWorkspace.id}/tasks`, { replace: true })
-            }
-        }
-    }, [currentWorkspaceId, workspaces, navigate])
-
     const handleWorkspaceChange = (newWorkspaceId: string) => {
-        // Replace the workspaceId in the current path and navigate
-        const newPath = location.pathname.replace(`/workspaces/${currentWorkspaceId}`, `/workspaces/${newWorkspaceId}`);
-        navigate(newPath)
+        if (currentWorkspaceId) {
+            // Replace the workspaceId in the current path and navigate
+            const newPath = location.pathname.replace(`/workspaces/${currentWorkspaceId}`, `/workspaces/${newWorkspaceId}`);
+            navigate(newPath)
+        } else {
+            // If in global view, navigate to the selected workspace's tasks view
+            navigate(`/workspaces/${newWorkspaceId}/tasks`)
+        }
     }
 
     if (workspaces.length === 0) {

@@ -10,6 +10,7 @@ import {
     FormItem,
     FormLabel,
     FormMessage,
+    FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -34,6 +35,7 @@ const taskSchema = z.object({
     urgency: z.string().min(1, 'Urgency is required'),
     complexity: z.string().min(1, 'Complexity is required'),
     queue: z.string().min(1, 'Queue is required'),
+    tags: z.string().optional(),
 });
 
 interface TaskFormProps {
@@ -53,6 +55,7 @@ export default function TaskForm({ workspaceId, task, onSuccess }: TaskFormProps
             urgency: 'normal',
             complexity: 'moderate',
             queue: 'default',
+            tags: '',
         },
     });
 
@@ -66,6 +69,7 @@ export default function TaskForm({ workspaceId, task, onSuccess }: TaskFormProps
                 urgency: task.urgency,
                 complexity: task.complexity,
                 queue: task.queue,
+                tags: task.tags?.map(t => t.name).join(', ') || '',
             });
         } else {
             form.reset({
@@ -76,6 +80,7 @@ export default function TaskForm({ workspaceId, task, onSuccess }: TaskFormProps
                 urgency: 'normal',
                 complexity: 'moderate',
                 queue: 'default',
+                tags: '',
             });
         }
     }, [task, form]);
@@ -84,12 +89,19 @@ export default function TaskForm({ workspaceId, task, onSuccess }: TaskFormProps
     const updateMutation = useUpdateTaskMutation(workspaceId);
 
     function onSubmit(values: z.infer<typeof taskSchema>) {
+        const tagsList = values.tags 
+            ? values.tags.split(',').map(t => t.trim()).filter(Boolean)
+            : [];
+
         if (task) {
-            updateMutation.mutate({ taskId: task.id, data: values as TaskUpdate }, {
+            updateMutation.mutate({ 
+                taskId: task.id, 
+                data: { ...values, tags: tagsList } as TaskUpdate 
+            }, {
                 onSuccess: onSuccess,
             });
         } else {
-            createMutation.mutate(values as TaskCreate, {
+            createMutation.mutate({ ...values, tags: tagsList } as TaskCreate, {
                 onSuccess: onSuccess,
             });
         }
@@ -124,6 +136,24 @@ export default function TaskForm({ workspaceId, task, onSuccess }: TaskFormProps
                         </FormItem>
                     )}
                 />
+                
+                <FormField
+                    control={form.control}
+                    name="tags"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Tags</FormLabel>
+                            <FormControl>
+                                <Input placeholder="Type tags separated by commas... (e.g. bug, frontend)" {...field} />
+                            </FormControl>
+                            <FormDescription>
+                                Separate multiple tags with commas.
+                            </FormDescription>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
                 <div className="grid grid-cols-2 gap-4">
                     <FormField
                         control={form.control}
@@ -230,9 +260,9 @@ export default function TaskForm({ workspaceId, task, onSuccess }: TaskFormProps
                             <FormLabel>Queue</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                                 <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select queue" />
-                                    </SelectTrigger>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select queue" />
+                                        </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
                                     <SelectItem value="default">Default</SelectItem>

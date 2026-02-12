@@ -14,11 +14,10 @@ import {
 import { Badge } from "@/components/ui/badge"
 
 export type TaskHistoryColumnProps = {
-    onEdit: (history: TaskHistoryRead) => void;
     onDelete: (history: TaskHistoryRead) => void;
 }
 
-export const getHistoryColumns = ({ onEdit, onDelete }: TaskHistoryColumnProps): ColumnDef<TaskHistoryRead>[] => [
+export const getHistoryColumns = ({ onDelete }: TaskHistoryColumnProps): ColumnDef<TaskHistoryRead>[] => [
     {
         accessorKey: "task_id",
         header: "Task ID",
@@ -72,7 +71,6 @@ export const getHistoryColumns = ({ onEdit, onDelete }: TaskHistoryColumnProps):
                             Copy ID
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => onEdit(history)}>Edit</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => onDelete(history)} className="text-destructive">
                             Delete
                         </DropdownMenuItem>

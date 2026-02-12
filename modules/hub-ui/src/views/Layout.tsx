@@ -15,13 +15,17 @@ import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { WorkspaceSelector } from '@/components/WorkspaceSelector';
 import { Separator } from '@/components/ui/separator';
+import { useUiStore } from '@/stores/uiStore';
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> { }
 
 export function Sidebar({ className }: SidebarProps) {
     const location = useLocation();
-    const { workspaceId } = useParams<{ workspaceId: string }>();
+    const { workspaceId: paramWorkspaceId } = useParams<{ workspaceId: string }>();
+    const activeWorkspaceId = useUiStore((s) => s.activeWorkspaceId);
     const pathname = location.pathname;
+
+    const workspaceId = paramWorkspaceId || activeWorkspaceId;
 
     const workspaceItems = [
         { name: 'Gateway', href: `/workspaces/${workspaceId}/gateway`, icon: MessageSquare, exact: false },
@@ -29,6 +33,7 @@ export function Sidebar({ className }: SidebarProps) {
         { name: 'Tags', href: `/workspaces/${workspaceId}/tags`, icon: Tag, exact: false },
         { name: 'History', href: `/workspaces/${workspaceId}/history`, icon: History, exact: false },
     ];
+// ... rest of the file ...
 
     const globalItems = [
         { name: 'Agents', href: '/agents', icon: Bot, exact: false },

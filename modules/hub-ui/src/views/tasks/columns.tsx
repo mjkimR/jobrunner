@@ -42,6 +42,25 @@ export const getColumns = ({ onEdit, onDelete }: TaskColumnProps): ColumnDef<Tas
         header: "Queue",
     },
     {
+        accessorKey: "tags",
+        header: "Tags",
+        cell: ({ row }) => {
+            const tags = row.original.tags || []
+            return (
+                <div className="flex gap-1 flex-wrap">
+                    {tags.slice(0, 3).map((tag) => (
+                        <Badge key={tag.id} variant="outline" className="text-xs">
+                            {tag.name}
+                        </Badge>
+                    ))}
+                    {tags.length > 3 && (
+                        <span className="text-xs text-muted-foreground self-center">+{tags.length - 3}</span>
+                    )}
+                </div>
+            )
+        }
+    },
+    {
         accessorKey: "created_at",
         header: "Created At",
         cell: ({ row }) => {
