@@ -12,6 +12,15 @@ from tests.utils.assertions import assert_json_contains, assert_status_code
 
 @pytest.mark.e2e
 class TestTasksAPI:
+    _base_url = "/api/v1/workspaces/{workspace_id}/tasks"
+
+    @classmethod
+    def base_url(cls, workspace_id, task_id=None) -> str:
+        url = cls._base_url.format(workspace_id=workspace_id)
+        if task_id:
+            url += f"/{task_id}"
+        return url
+
     async def test_create_task(
         self,
         client: AsyncClient,
@@ -20,7 +29,7 @@ class TestTasksAPI:
         workspace: Workspace = await make_db(WorkspaceRepository, is_default=False)
         task_in = TaskCreate(title="New Task", description="A new task description", tags=["bug", "feature"])
 
-        response = await client.post(f"/api/v1/workspace/{workspace.id}/tasks", json=task_in.model_dump())
+        response = await client.post(self.base_url(workspace.id), json=task_in.model_dump())
 
         assert_status_code(response, 201)
         created_task = TaskRead.model_validate(response.json())
@@ -37,7 +46,7 @@ class TestTasksAPI:
         workspace: Workspace = await make_db(WorkspaceRepository, is_default=False)
         task: Task = await make_db(TaskRepository, workspace_id=workspace.id, title="Get This Task")
 
-        response = await client.get(f"/api/v1/workspace/{workspace.id}/tasks/{task.id}")
+        response = await client.get(self.base_url(workspace.id, task.id))
 
         assert_status_code(response, 200)
         retrieved_task = TaskRead.model_validate(response.json())
@@ -55,7 +64,7 @@ class TestTasksAPI:
 
         task: Task = await make_db(TaskRepository, workspace_id=workspace.id, tags=[tag1, tag2])
 
-        response = await client.get(f"/api/v1/workspace/{workspace.id}/tasks/{task.id}")
+        response = await client.get(self.base_url(workspace.id, task.id))
 
         assert_status_code(response, 200)
         retrieved_task = TaskRead.model_validate(response.json())
@@ -72,7 +81,7 @@ class TestTasksAPI:
         workspace: Workspace = await make_db(WorkspaceRepository, is_default=False)
         await make_db_batch(TaskRepository, 5, workspace_id=workspace.id)
 
-        response = await client.get(f"/api/v1/workspace/{workspace.id}/tasks")
+        response = await client.get(self.base_url(workspace.id))
 
         assert_status_code(response, 200)
         assert "items" in response.json()
@@ -95,7 +104,7 @@ class TestTasksAPI:
 
         update_data = TaskUpdate(title="New Title", description="New description")
         response = await client.put(
-            f"/api/v1/workspace/{workspace.id}/tasks/{task.id}", json=update_data.model_dump(exclude_unset=True)
+            self.base_url(workspace.id, task.id), json=update_data.model_dump(exclude_unset=True)
         )
 
         assert_status_code(response, 200)
@@ -114,7 +123,7 @@ class TestTasksAPI:
 
         update_data = TaskUpdate(tags=["new_tag", "another_tag"])
         response = await client.put(
-            f"/api/v1/workspace/{workspace.id}/tasks/{task.id}", json=update_data.model_dump(exclude_unset=True)
+            self.base_url(workspace.id, task.id), json=update_data.model_dump(exclude_unset=True)
         )
 
         assert_status_code(response, 200)
@@ -130,7 +139,7 @@ class TestTasksAPI:
         workspace: Workspace = await make_db(WorkspaceRepository, is_default=False)
         task: Task = await make_db(TaskRepository, workspace_id=workspace.id)
 
-        response = await client.delete(f"/api/v1/workspace/{workspace.id}/tasks/{task.id}")
+        response = await client.delete(self.base_url(workspace.id, task.id))
 
         assert_status_code(response, 200)
         response_json = response.json()
@@ -138,5 +147,5 @@ class TestTasksAPI:
         assert response_json["identity"] == str(task.id)
 
         # Verify deletion
-        response = await client.get(f"/api/v1/workspace/{workspace.id}/tasks/{task.id}")
+        response = await client.get(self.base_url(workspace.id, task.id))
         assert_status_code(response, 404)

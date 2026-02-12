@@ -24,7 +24,7 @@ export class TaskHistoriesService {
     ): CancelablePromise<TaskHistoryRead> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/v1/workspace/{workspace_id}/task_histories',
+            url: '/api/v1/workspaces/{workspace_id}/task_histories',
             path: {
                 'workspace_id': workspaceId,
             },
@@ -50,7 +50,7 @@ export class TaskHistoriesService {
     ): CancelablePromise<PaginatedList_TaskHistoryRead_> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/workspace/{workspace_id}/task_histories',
+            url: '/api/v1/workspaces/{workspace_id}/task_histories',
             path: {
                 'workspace_id': workspaceId,
             },
@@ -76,7 +76,7 @@ export class TaskHistoriesService {
     ): CancelablePromise<TaskHistoryRead> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/workspace/{workspace_id}/task_histories/{task_history_id}',
+            url: '/api/v1/workspaces/{workspace_id}/task_histories/{task_history_id}',
             path: {
                 'workspace_id': workspaceId,
                 'task_history_id': taskHistoryId,
@@ -101,7 +101,7 @@ export class TaskHistoriesService {
     ): CancelablePromise<TaskHistoryRead> {
         return __request(OpenAPI, {
             method: 'PUT',
-            url: '/api/v1/workspace/{workspace_id}/task_histories/{task_history_id}',
+            url: '/api/v1/workspaces/{workspace_id}/task_histories/{task_history_id}',
             path: {
                 'workspace_id': workspaceId,
                 'task_history_id': taskHistoryId,
@@ -126,7 +126,7 @@ export class TaskHistoriesService {
     ): CancelablePromise<DeleteResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/v1/workspace/{workspace_id}/task_histories/{task_history_id}',
+            url: '/api/v1/workspaces/{workspace_id}/task_histories/{task_history_id}',
             path: {
                 'workspace_id': workspaceId,
                 'task_history_id': taskHistoryId,

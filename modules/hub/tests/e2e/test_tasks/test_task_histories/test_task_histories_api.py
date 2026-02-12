@@ -12,6 +12,15 @@ from tests.utils.assertions import assert_json_contains, assert_status_code
 
 @pytest.mark.e2e
 class TestTaskHistoriesAPI:
+    _base_url = "/api/v1/workspaces/{workspace_id}/task_histories"
+
+    @classmethod
+    def base_url(cls, workspace_id, task_history_id=None) -> str:
+        url = cls._base_url.format(workspace_id=workspace_id)
+        if task_history_id:
+            url += f"/{task_history_id}"
+        return url
+
     async def test_create_task_history(
         self,
         client: AsyncClient,
@@ -30,9 +39,7 @@ class TestTaskHistoriesAPI:
             comment="Task started",
         )
 
-        response = await client.post(
-            f"/api/v1/workspace/{workspace.id}/task_histories", json=task_history_in.model_dump()
-        )
+        response = await client.post(self.base_url(workspace.id), json=task_history_in.model_dump())
 
         assert_status_code(response, 201)
         created_task_history = TaskHistoryRead.model_validate(response.json())
@@ -60,7 +67,7 @@ class TestTaskHistoriesAPI:
             changed_by="system",
         )
 
-        response = await client.get(f"/api/v1/workspace/{workspace.id}/task_histories/{task_history.id}")
+        response = await client.get(self.base_url(workspace.id, task_history.id))
 
         assert_status_code(response, 200)
         retrieved_task_history = TaskHistoryRead.model_validate(response.json())
@@ -87,7 +94,7 @@ class TestTaskHistoriesAPI:
             task_id=task.id,
         )
 
-        response = await client.get(f"/api/v1/workspace/{workspace.id}/task_histories")
+        response = await client.get(self.base_url(workspace.id))
 
         assert_status_code(response, 200)
         assert "items" in response.json()
@@ -112,9 +119,7 @@ class TestTaskHistoriesAPI:
         )
 
         update_data = {"comment": "Updated comment"}
-        response = await client.put(
-            f"/api/v1/workspace/{workspace.id}/task_histories/{task_history.id}", json=update_data
-        )
+        response = await client.put(self.base_url(workspace.id, task_history.id), json=update_data)
 
         assert_status_code(response, 200)
         updated_task_history = TaskHistoryRead.model_validate(response.json())
@@ -136,7 +141,7 @@ class TestTaskHistoriesAPI:
             task_id=task.id,
         )
 
-        response = await client.delete(f"/api/v1/workspace/{workspace.id}/task_histories/{task_history.id}")
+        response = await client.delete(self.base_url(workspace.id, task_history.id))
 
         assert_status_code(response, 200)
         response_json = response.json()
@@ -144,5 +149,5 @@ class TestTaskHistoriesAPI:
         assert response_json["identity"] == str(task_history.id)
 
         # Verify deletion
-        response = await client.get(f"/api/v1/workspace/{workspace.id}/task_histories/{task_history.id}")
+        response = await client.get(self.base_url(workspace.id, task_history.id))
         assert_status_code(response, 404)

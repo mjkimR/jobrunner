@@ -20,9 +20,9 @@ class TestDeleteConversation:
 
         use_case = resolve_dependency(DeleteConversationUseCase)
 
-        result = await use_case.execute(conversation.id)
+        result = await use_case.execute(conversation.id, {"parent_id": workspace.id})
 
-        assert result.identity == str(conversation.id)
+        assert str(result.identity) == str(conversation.id)
 
         # Verify in DB
         db_conversation = await inspect_session.get(Conversation, conversation.id)

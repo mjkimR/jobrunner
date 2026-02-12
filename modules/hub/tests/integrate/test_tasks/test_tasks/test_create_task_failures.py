@@ -2,7 +2,7 @@ import pytest
 from app.tasks.tasks.schemas import TaskCreate
 from app.tasks.tasks.services import TaskContextKwargs
 from app.tasks.tasks.usecases.crud import CreateTaskUseCase
-from app_base.base.exceptions import NotFoundException
+from app_base.base.exceptions.basic import NotFoundException
 from sqlalchemy.ext.asyncio import AsyncSession
 from tests.utils.fastapi import resolve_dependency
 
@@ -23,12 +23,6 @@ class TestCreateTaskFailures:
 
         task_in = TaskCreate(title="Orphan Task")
         context: TaskContextKwargs = {"parent_id": random_workspace_id}
-
-        # Depending on implementation, this might raise NotFoundException (if workspace check exists)
-        # or IntegrityError (DB constraint)
-        # The service uses ExistsCheckHooksMixin usually, let's verify if Workspace existence is checked.
-        # TaskService has NestedResourceHooksMixin -> repo_workspace.
-        # Usually it attempts to validate parent existence if configured.
 
         # If the parent check is enforced by the service layer:
         with pytest.raises(NotFoundException):

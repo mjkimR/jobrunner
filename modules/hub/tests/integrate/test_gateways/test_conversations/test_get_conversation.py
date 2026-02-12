@@ -19,7 +19,7 @@ class TestGetConversation:
 
         use_case = resolve_dependency(GetConversationUseCase)
 
-        result = await use_case.execute(conversation.id)
+        result = await use_case.execute(conversation.id, {"parent_id": workspace.id})
 
         assert result is not None
         assert result.id == conversation.id
@@ -32,6 +32,6 @@ class TestGetConversation:
 
         random_id = uuid.uuid4()
 
-        result = await use_case.execute(random_id)
+        result = await use_case.execute(random_id, {"parent_id": uuid.uuid4()})
 
         assert result is None

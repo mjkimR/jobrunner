@@ -10,6 +10,15 @@ from tests.utils.assertions import assert_status_code
 
 @pytest.mark.e2e
 class TestConversationsAPI:
+    _base_url = "/api/v1/workspaces/{workspace_id}/conversations"
+
+    @classmethod
+    def base_url(cls, workspace_id, conversation_id=None) -> str:
+        url = cls._base_url.format(workspace_id=workspace_id)
+        if conversation_id:
+            url += f"/{conversation_id}"
+        return url
+
     async def test_create_conversation(self, client: AsyncClient, make_db):
         workspace: Workspace = await make_db(WorkspaceRepository, is_default=False)
 
@@ -17,7 +26,7 @@ class TestConversationsAPI:
             workspace_id=workspace.id, title="E2E Conversation", channel="slack", status="active"
         )
 
-        response = await client.post("/api/v1/conversations", json=conversation_in.model_dump(mode="json"))
+        response = await client.post(self.base_url(workspace.id), json=conversation_in.model_dump(mode="json"))
 
         assert_status_code(response, 201)
         created = ConversationRead.model_validate(response.json())
@@ -33,7 +42,7 @@ class TestConversationsAPI:
             context={},
         )
 
-        response = await client.get(f"/api/v1/conversations/{conversation.id}")
+        response = await client.get(self.base_url(workspace.id, conversation.id))
 
         assert_status_code(response, 200)
         retrieved = ConversationRead.model_validate(response.json())
@@ -51,7 +60,7 @@ class TestConversationsAPI:
         update_data = ConversationUpdate(title="Updated E2E", status="closed")
 
         response = await client.put(
-            f"/api/v1/conversations/{conversation.id}", json=update_data.model_dump(exclude_unset=True)
+            self.base_url(workspace.id, conversation.id), json=update_data.model_dump(exclude_unset=True)
         )
 
         assert_status_code(response, 200)
@@ -68,10 +77,10 @@ class TestConversationsAPI:
             context={},
         )
 
-        response = await client.delete(f"/api/v1/conversations/{conversation.id}")
+        response = await client.delete(self.base_url(workspace.id, conversation.id))
 
         assert_status_code(response, 200)
 
         # Verify 404
-        get_response = await client.get(f"/api/v1/conversations/{conversation.id}")
+        get_response = await client.get(self.base_url(workspace.id, conversation.id))
         assert_status_code(get_response, 404)

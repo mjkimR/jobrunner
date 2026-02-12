@@ -55,7 +55,11 @@ class Task(Base, UUIDMixin, TimestampMixin):
     parent_task: Mapped["Task | None"] = relationship("Task", remote_side="Task.id", back_populates="subtasks")
     subtasks: Mapped[list["Task"]] = relationship("Task", back_populates="parent_task", cascade="all, delete-orphan")
     tags: Mapped[list["TaskTag"]] = relationship(
-        "TaskTag", secondary="task_tag_associations", back_populates="tasks", lazy="selectin"
+        "TaskTag",
+        secondary="task_tag_associations",
+        back_populates="tasks",
+        lazy="selectin",
+        order_by="TaskTag.created_at",
     )
     histories: Mapped[list["TaskHistory"]] = relationship(
         "TaskHistory", back_populates="task", cascade="all, delete-orphan"

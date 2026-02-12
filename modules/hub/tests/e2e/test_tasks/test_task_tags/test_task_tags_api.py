@@ -10,6 +10,15 @@ from tests.utils.assertions import assert_json_contains, assert_status_code
 
 @pytest.mark.e2e
 class TestTaskTagsAPI:
+    _base_url = "/api/v1/workspaces/{workspace_id}/task_tags"
+
+    @classmethod
+    def base_url(cls, workspace_id, task_tag_id=None) -> str:
+        url = cls._base_url.format(workspace_id=workspace_id)
+        if task_tag_id:
+            url += f"/{task_tag_id}"
+        return url
+
     async def test_create_task_tag(
         self,
         client: AsyncClient,
@@ -20,7 +29,7 @@ class TestTaskTagsAPI:
 
         task_tag_in = TaskTagCreate(name="New Tag", description="A description", color="#FFFFFF")
 
-        response = await client.post(f"/api/v1/workspace/{workspace.id}/task_tags", json=task_tag_in.model_dump())
+        response = await client.post(self.base_url(workspace.id), json=task_tag_in.model_dump())
 
         assert_status_code(response, 201)
         created_task_tag = TaskTagRead.model_validate(response.json())
@@ -44,7 +53,7 @@ class TestTaskTagsAPI:
 
         task_tag_in = TaskTagCreate(name="Existing Tag", description="Another description", color="#AAAAAA")
 
-        response = await client.post(f"/api/v1/workspace/{workspace.id}/task_tags", json=task_tag_in.model_dump())
+        response = await client.post(self.base_url(workspace.id), json=task_tag_in.model_dump())
 
         assert_status_code(response, 409)  # Conflict
 
@@ -62,7 +71,7 @@ class TestTaskTagsAPI:
             color="#FF0000",
         )
 
-        response = await client.get(f"/api/v1/workspace/{workspace.id}/task_tags/{task_tag.id}")
+        response = await client.get(self.base_url(workspace.id, task_tag.id))
 
         assert_status_code(response, 200)
         retrieved_task_tag = TaskTagRead.model_validate(response.json())
@@ -80,7 +89,7 @@ class TestTaskTagsAPI:
 
         await make_db_batch(TaskTagRepository, 5, workspace_id=workspace.id)
 
-        response = await client.get(f"/api/v1/workspace/{workspace.id}/task_tags")
+        response = await client.get(self.base_url(workspace.id))
 
         assert_status_code(response, 200)
         assert "items" in response.json()
@@ -104,7 +113,7 @@ class TestTaskTagsAPI:
 
         update_data = TaskTagUpdate(description="New description", color="#FEDCBA")
         response = await client.put(
-            f"/api/v1/workspace/{workspace.id}/task_tags/{task_tag.id}", json=update_data.model_dump(exclude_unset=True)
+            self.base_url(workspace.id, task_tag.id), json=update_data.model_dump(exclude_unset=True)
         )
 
         assert_status_code(response, 200)
@@ -121,7 +130,7 @@ class TestTaskTagsAPI:
         workspace: Workspace = await make_db(WorkspaceRepository, is_default=False)
         task_tag: TaskTag = await make_db(TaskTagRepository, workspace_id=workspace.id)
 
-        response = await client.delete(f"/api/v1/workspace/{workspace.id}/task_tags/{task_tag.id}")
+        response = await client.delete(self.base_url(workspace.id, task_tag.id))
 
         assert_status_code(response, 200)
         response_json = response.json()
@@ -129,5 +138,5 @@ class TestTaskTagsAPI:
         assert response_json["identity"] == str(task_tag.id)
 
         # Verify deletion
-        response = await client.get(f"/api/v1/workspace/{workspace.id}/task_tags/{task_tag.id}")
+        response = await client.get(self.base_url(workspace.id, task_tag.id))
         assert_status_code(response, 404)

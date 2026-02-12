@@ -24,7 +24,7 @@ export class TaskTagService {
     ): CancelablePromise<TaskTagRead> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/v1/workspace/{workspace_id}/task_tags',
+            url: '/api/v1/workspaces/{workspace_id}/task_tags',
             path: {
                 'workspace_id': workspaceId,
             },
@@ -50,7 +50,7 @@ export class TaskTagService {
     ): CancelablePromise<PaginatedList_TaskTagRead_> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/workspace/{workspace_id}/task_tags',
+            url: '/api/v1/workspaces/{workspace_id}/task_tags',
             path: {
                 'workspace_id': workspaceId,
             },
@@ -76,7 +76,7 @@ export class TaskTagService {
     ): CancelablePromise<TaskTagRead> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/workspace/{workspace_id}/task_tags/{task_tag_id}',
+            url: '/api/v1/workspaces/{workspace_id}/task_tags/{task_tag_id}',
             path: {
                 'workspace_id': workspaceId,
                 'task_tag_id': taskTagId,
@@ -101,7 +101,7 @@ export class TaskTagService {
     ): CancelablePromise<TaskTagRead> {
         return __request(OpenAPI, {
             method: 'PUT',
-            url: '/api/v1/workspace/{workspace_id}/task_tags/{task_tag_id}',
+            url: '/api/v1/workspaces/{workspace_id}/task_tags/{task_tag_id}',
             path: {
                 'workspace_id': workspaceId,
                 'task_tag_id': taskTagId,
@@ -126,7 +126,7 @@ export class TaskTagService {
     ): CancelablePromise<DeleteResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/v1/workspace/{workspace_id}/task_tags/{task_tag_id}',
+            url: '/api/v1/workspaces/{workspace_id}/task_tags/{task_tag_id}',
             path: {
                 'workspace_id': workspaceId,
                 'task_tag_id': taskTagId,

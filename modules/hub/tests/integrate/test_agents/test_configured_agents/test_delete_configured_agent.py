@@ -19,7 +19,7 @@ class TestDeleteConfiguredAgent:
 
         result = await use_case.execute(agent.id)
 
-        assert result.identity == str(agent.id)
+        assert str(result.identity) == str(agent.id)
 
         # Verify in DB
         db_agent = await inspect_session.get(ConfiguredAgent, agent.id)

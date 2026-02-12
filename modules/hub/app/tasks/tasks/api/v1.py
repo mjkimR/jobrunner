@@ -1,6 +1,7 @@
 from typing import Annotated
 from uuid import UUID
 
+from app.tasks.tasks.filters import TaskFilterDepend
 from app.tasks.tasks.schemas import TaskCreate, TaskRead, TaskUpdate
 from app.tasks.tasks.services import TaskContextKwargs
 from app.tasks.tasks.usecases.crud import (
@@ -16,7 +17,7 @@ from app_base.base.schemas.delete_resp import DeleteResponse
 from app_base.base.schemas.paginated import PaginatedList
 from fastapi import APIRouter, Depends, status
 
-router = APIRouter(prefix="/workspace/{workspace_id}/tasks", tags=["Task"], dependencies=[])
+router = APIRouter(prefix="/workspaces/{workspace_id}/tasks", tags=["Task"], dependencies=[])
 
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=TaskRead)
@@ -34,9 +35,10 @@ async def get_tasks(
     workspace_id: UUID,
     use_case: Annotated[GetMultiTaskUseCase, Depends()],
     pagination: PaginationParam,
+    filters: TaskFilterDepend,
 ):
     context: TaskContextKwargs = {"parent_id": workspace_id}
-    return await use_case.execute(**pagination, context=context)
+    return await use_case.execute(**pagination, context=context, where=filters)
 
 
 @router.get("/{task_id}", response_model=TaskRead)

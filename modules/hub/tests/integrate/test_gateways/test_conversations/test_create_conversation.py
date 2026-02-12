@@ -18,7 +18,7 @@ class TestCreateConversation:
             workspace_id=workspace.id, title="Integration Conversation", channel="web", status="active"
         )
 
-        result = await use_case.execute(conversation_in)
+        result = await use_case.execute(conversation_in, {"parent_id": workspace.id})
 
         assert result.title == "Integration Conversation"
         assert result.workspace_id == workspace.id

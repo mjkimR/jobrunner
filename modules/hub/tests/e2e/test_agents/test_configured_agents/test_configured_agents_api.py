@@ -8,10 +8,19 @@ from tests.utils.assertions import assert_status_code
 
 @pytest.mark.e2e
 class TestConfiguredAgentsAPI:
+    _base_url = "/api/v1/configured_agents"
+
+    @classmethod
+    def base_url(cls, agent_id=None) -> str:
+        url = cls._base_url
+        if agent_id:
+            url += f"/{agent_id}"
+        return url
+
     async def test_create_configured_agent(self, client: AsyncClient):
         agent_in = ConfiguredAgentCreate(name="E2E Agent", model_name="gpt-4", description="E2E Agent Description")
 
-        response = await client.post("/api/v1/configured_agents", json=agent_in.model_dump())
+        response = await client.post(self.base_url(), json=agent_in.model_dump())
 
         assert_status_code(response, 201)
         created = ConfiguredAgentRead.model_validate(response.json())
@@ -26,7 +35,7 @@ class TestConfiguredAgentsAPI:
             config={},
         )
 
-        response = await client.get(f"/api/v1/configured_agents/{agent.id}")
+        response = await client.get(self.base_url(agent.id))
 
         assert_status_code(response, 200)
         retrieved = ConfiguredAgentRead.model_validate(response.json())
@@ -42,9 +51,7 @@ class TestConfiguredAgentsAPI:
 
         update_data = ConfiguredAgentUpdate(name="Updated Agent")
 
-        response = await client.put(
-            f"/api/v1/configured_agents/{agent.id}", json=update_data.model_dump(exclude_unset=True)
-        )
+        response = await client.put(self.base_url(agent.id), json=update_data.model_dump(exclude_unset=True))
 
         assert_status_code(response, 200)
         updated = ConfiguredAgentRead.model_validate(response.json())
@@ -59,10 +66,10 @@ class TestConfiguredAgentsAPI:
             config={},
         )
 
-        response = await client.delete(f"/api/v1/configured_agents/{agent.id}")
+        response = await client.delete(self.base_url(agent.id))
 
         assert_status_code(response, 200)
 
         # Verify 404
-        get_response = await client.get(f"/api/v1/configured_agents/{agent.id}")
+        get_response = await client.get(self.base_url(agent.id))
         assert_status_code(get_response, 404)
