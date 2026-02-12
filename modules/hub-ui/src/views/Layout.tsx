@@ -17,7 +17,7 @@ import { WorkspaceSelector } from '@/components/WorkspaceSelector';
 import { Separator } from '@/components/ui/separator';
 import { useUiStore } from '@/stores/uiStore';
 
-interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> { }
+type SidebarProps = React.HTMLAttributes<HTMLDivElement>;
 
 export function Sidebar({ className }: SidebarProps) {
     const location = useLocation();

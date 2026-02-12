@@ -16,17 +16,17 @@ export default function HomeView() {
   const setLastRefreshAt = useUiStore((s) => s.setLastRefreshAt)
 
   const { data: workspacesData } = useWorkspacesQuery()
-  const workspaces = workspacesData?.items ?? []
-
   // Redirect to default workspace if at root
   useEffect(() => {
+    const workspaces = workspacesData?.items ?? []
+
     if (!workspaceId && workspaces.length > 0) {
-        const defaultWorkspace = workspaces.find(w => w.is_default) ?? workspaces[0];
-        if (defaultWorkspace) {
-            navigate(`/workspaces/${defaultWorkspace.id}/tasks`, { replace: true })
-        }
+      const defaultWorkspace = workspaces.find((w) => w.is_default) ?? workspaces[0]
+      if (defaultWorkspace) {
+        navigate(`/workspaces/${defaultWorkspace.id}/tasks`, { replace: true })
+      }
     }
-  }, [workspaceId, workspaces, navigate])
+  }, [workspaceId, workspacesData, navigate])
 
   const tasksQuery = useTasksQuery(workspaceId!, { offset: 0, limit: 20 })
 
