@@ -1,5 +1,6 @@
+from app.common.database import JSON_VARIANT
 from app_base.base.models.mixin import Base, TimestampMixin, UUIDMixin
-from sqlalchemy import JSON, Boolean, Index, String, Text
+from sqlalchemy import Boolean, Index, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 
@@ -8,7 +9,7 @@ class Workspace(Base, UUIDMixin, TimestampMixin):
     name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     alias: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    meta: Mapped[dict] = mapped_column(JSON, nullable=False, default={})
+    meta: Mapped[dict] = mapped_column(JSON_VARIANT, nullable=False, default={})
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     is_default: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 

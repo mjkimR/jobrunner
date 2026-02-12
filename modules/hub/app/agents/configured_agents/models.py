@@ -6,9 +6,9 @@ DB Schema Reference: docs/specification/DB_SCHEMA.md#2.2
 
 from typing import TYPE_CHECKING
 
+from app.common.database import JSON_VARIANT
 from app_base.base.models.mixin import Base, TimestampMixin, UUIDMixin
 from sqlalchemy import Boolean, ForeignKey, String, Text
-from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
@@ -43,7 +43,7 @@ class ConfiguredAgent(Base, UUIDMixin, TimestampMixin):
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     model_name: Mapped[str] = mapped_column(String(100), nullable=False)
     system_prompt: Mapped[str | None] = mapped_column(Text, nullable=True)
-    config: Mapped[dict] = mapped_column(JSON, nullable=False, default={})
+    config: Mapped[dict] = mapped_column(JSON_VARIANT, nullable=False, default={})
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
     # Relationships
