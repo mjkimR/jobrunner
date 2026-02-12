@@ -4,9 +4,13 @@
 /* eslint-disable */
 import type { DeleteResponse } from '../models/DeleteResponse';
 import type { PaginatedList_TaskRead_ } from '../models/PaginatedList_TaskRead_';
+import type { TaskComplexity } from '../models/TaskComplexity';
 import type { TaskCreate } from '../models/TaskCreate';
+import type { TaskPriority } from '../models/TaskPriority';
 import type { TaskRead } from '../models/TaskRead';
+import type { TaskStatus } from '../models/TaskStatus';
 import type { TaskUpdate } from '../models/TaskUpdate';
+import type { TaskUrgency } from '../models/TaskUrgency';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -18,7 +22,7 @@ export class TaskService {
      * @returns TaskRead Successful Response
      * @throws ApiError
      */
-    public static createTaskApiV1WorkspaceWorkspaceIdTasksPost(
+    public static createTaskApiV1WorkspacesWorkspaceIdTasksPost(
         workspaceId: string,
         requestBody: TaskCreate,
     ): CancelablePromise<TaskRead> {
@@ -40,13 +44,23 @@ export class TaskService {
      * @param workspaceId
      * @param offset offset for pagination
      * @param limit limit for pagination
+     * @param filterTitle Filter Task by field 'title' using case-insensitive substring match
+     * @param filterStatus Filter Task by field 'status' matching TaskStatus values
+     * @param filterPriority Filter Task by field 'priority' matching TaskPriority values
+     * @param filterUrgency Filter Task by field 'urgency' matching TaskUrgency values
+     * @param filterComplexity Filter Task by field 'complexity' matching TaskComplexity values
      * @returns PaginatedList_TaskRead_ Successful Response
      * @throws ApiError
      */
-    public static getTasksApiV1WorkspaceWorkspaceIdTasksGet(
+    public static getTasksApiV1WorkspacesWorkspaceIdTasksGet(
         workspaceId: string,
         offset?: number,
         limit: number = 100,
+        filterTitle?: (string | null),
+        filterStatus?: (TaskStatus | null),
+        filterPriority?: (TaskPriority | null),
+        filterUrgency?: (TaskUrgency | null),
+        filterComplexity?: (TaskComplexity | null),
     ): CancelablePromise<PaginatedList_TaskRead_> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -57,6 +71,11 @@ export class TaskService {
             query: {
                 'offset': offset,
                 'limit': limit,
+                'filter_title': filterTitle,
+                'filter_status': filterStatus,
+                'filter_priority': filterPriority,
+                'filter_urgency': filterUrgency,
+                'filter_complexity': filterComplexity,
             },
             errors: {
                 422: `Validation Error`,
@@ -70,7 +89,7 @@ export class TaskService {
      * @returns TaskRead Successful Response
      * @throws ApiError
      */
-    public static getTaskApiV1WorkspaceWorkspaceIdTasksTaskIdGet(
+    public static getTaskApiV1WorkspacesWorkspaceIdTasksTaskIdGet(
         workspaceId: string,
         taskId: string,
     ): CancelablePromise<TaskRead> {
@@ -94,7 +113,7 @@ export class TaskService {
      * @returns TaskRead Successful Response
      * @throws ApiError
      */
-    public static updateTaskApiV1WorkspaceWorkspaceIdTasksTaskIdPut(
+    public static updateTaskApiV1WorkspacesWorkspaceIdTasksTaskIdPut(
         workspaceId: string,
         taskId: string,
         requestBody: TaskUpdate,
@@ -120,7 +139,7 @@ export class TaskService {
      * @returns DeleteResponse Successful Response
      * @throws ApiError
      */
-    public static deleteTaskApiV1WorkspaceWorkspaceIdTasksTaskIdDelete(
+    public static deleteTaskApiV1WorkspacesWorkspaceIdTasksTaskIdDelete(
         workspaceId: string,
         taskId: string,
     ): CancelablePromise<DeleteResponse> {

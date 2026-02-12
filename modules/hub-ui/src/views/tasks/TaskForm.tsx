@@ -81,11 +81,11 @@ export default function TaskForm({ workspaceId, task, onSuccess }: TaskFormProps
     }, [task, form]);
 
     const createMutation = useCreateTaskMutation(workspaceId);
-    const updateMutation = useUpdateTaskMutation(workspaceId, task?.id ?? '');
+    const updateMutation = useUpdateTaskMutation(workspaceId);
 
     function onSubmit(values: z.infer<typeof taskSchema>) {
         if (task) {
-            updateMutation.mutate(values as TaskUpdate, {
+            updateMutation.mutate({ taskId: task.id, data: values as TaskUpdate }, {
                 onSuccess: onSuccess,
             });
         } else {

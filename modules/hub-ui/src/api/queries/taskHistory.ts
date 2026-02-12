@@ -7,7 +7,7 @@ export function useTaskHistoryListQuery(workspaceId: string, params: { offset?: 
 
     return useQuery({
         queryKey: queryKeys.taskHistory.list(workspaceId, { offset, limit }),
-        queryFn: () => TaskHistoriesService.getTaskHistoriesApiV1WorkspaceWorkspaceIdTaskHistoriesGet(workspaceId, offset, limit ?? 100),
+        queryFn: () => TaskHistoriesService.getTaskHistoriesApiV1WorkspacesWorkspaceIdTaskHistoriesGet(workspaceId, offset, limit ?? 100),
         enabled: !!workspaceId,
     })
 }
@@ -15,7 +15,7 @@ export function useTaskHistoryListQuery(workspaceId: string, params: { offset?: 
 export function useCreateTaskHistoryMutation(workspaceId: string) {
     const queryClient = useQueryClient()
     return useMutation({
-        mutationFn: (data: TaskHistoryCreate) => TaskHistoriesService.createTaskHistoryApiV1WorkspaceWorkspaceIdTaskHistoriesPost(workspaceId, data),
+        mutationFn: (data: TaskHistoryCreate) => TaskHistoriesService.createTaskHistoryApiV1WorkspacesWorkspaceIdTaskHistoriesPost(workspaceId, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.taskHistory.list(workspaceId) })
         },
@@ -25,7 +25,7 @@ export function useCreateTaskHistoryMutation(workspaceId: string) {
 export function useUpdateTaskHistoryMutation(workspaceId: string, historyId: string) {
     const queryClient = useQueryClient()
     return useMutation({
-        mutationFn: (data: TaskHistoryUpdate) => TaskHistoriesService.updateTaskHistoryApiV1WorkspaceWorkspaceIdTaskHistoriesTaskHistoryIdPut(workspaceId, historyId, data),
+        mutationFn: (data: TaskHistoryUpdate) => TaskHistoriesService.updateTaskHistoryApiV1WorkspacesWorkspaceIdTaskHistoriesTaskHistoryIdPut(workspaceId, historyId, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.taskHistory.list(workspaceId) })
         },
@@ -37,7 +37,7 @@ export function useDeleteTaskHistoryMutation(workspaceId: string) {
     const queryClient = useQueryClient()
     return useMutation({
         mutationFn: (historyId: string) =>
-            TaskHistoriesService.deleteTaskHistoryApiV1WorkspaceWorkspaceIdTaskHistoriesTaskHistoryIdDelete(workspaceId, historyId),
+            TaskHistoriesService.deleteTaskHistoryApiV1WorkspacesWorkspaceIdTaskHistoriesTaskHistoryIdDelete(workspaceId, historyId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.taskHistory.list(workspaceId) })
         },

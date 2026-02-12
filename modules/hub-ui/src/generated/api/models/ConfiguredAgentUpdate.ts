@@ -25,7 +25,7 @@ export type ConfiguredAgentUpdate = {
     /**
      * Configuration
      */
-    config?: (Record<string, any> | null);
+    config?: (Record<string, (string | number | boolean | Record<string, any> | null)> | null);
     /**
      * Active Status
      */

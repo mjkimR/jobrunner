@@ -13,16 +13,23 @@ import { request as __request } from '../core/request';
 export class ChatMessageService {
     /**
      * Create Chat Message
+     * @param conversationId
      * @param requestBody
      * @returns ChatMessageRead Successful Response
      * @throws ApiError
      */
-    public static createChatMessageApiV1ChatMessagesPost(
+    public static createChatMessageApiV1WorkspacesWorkspaceIdConversationsConversationIdChatMessagesPost(
+        workspaceId: string,
+        conversationId: string,
         requestBody: ChatMessageCreate,
     ): CancelablePromise<ChatMessageRead> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/v1/chat_messages',
+            url: '/api/v1/workspaces/{workspace_id}/conversations/{conversation_id}/chat_messages',
+            path: {
+                'workspace_id': workspaceId,
+                'conversation_id': conversationId,
+            },
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -32,18 +39,25 @@ export class ChatMessageService {
     }
     /**
      * Get Chat Messages
+     * @param conversationId
      * @param offset offset for pagination
      * @param limit limit for pagination
      * @returns PaginatedList_ChatMessageRead_ Successful Response
      * @throws ApiError
      */
-    public static getChatMessagesApiV1ChatMessagesGet(
+    public static getChatMessagesApiV1WorkspacesWorkspaceIdConversationsConversationIdChatMessagesGet(
+        workspaceId: string,
+        conversationId: string,
         offset?: number,
         limit: number = 100,
     ): CancelablePromise<PaginatedList_ChatMessageRead_> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/chat_messages',
+            url: '/api/v1/workspaces/{workspace_id}/conversations/{conversation_id}/chat_messages',
+            path: {
+                'workspace_id': workspaceId,
+                'conversation_id': conversationId,
+            },
             query: {
                 'offset': offset,
                 'limit': limit,
@@ -55,17 +69,22 @@ export class ChatMessageService {
     }
     /**
      * Get Chat Message
+     * @param conversationId
      * @param chatMessageId
      * @returns ChatMessageRead Successful Response
      * @throws ApiError
      */
-    public static getChatMessageApiV1ChatMessagesChatMessageIdGet(
+    public static getChatMessageApiV1WorkspacesWorkspaceIdConversationsConversationIdChatMessagesChatMessageIdGet(
+        workspaceId: string,
+        conversationId: string,
         chatMessageId: string,
     ): CancelablePromise<ChatMessageRead> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/chat_messages/{chat_message_id}',
+            url: '/api/v1/workspaces/{workspace_id}/conversations/{conversation_id}/chat_messages/{chat_message_id}',
             path: {
+                'workspace_id': workspaceId,
+                'conversation_id': conversationId,
                 'chat_message_id': chatMessageId,
             },
             errors: {
@@ -75,19 +94,24 @@ export class ChatMessageService {
     }
     /**
      * Update Chat Message
+     * @param conversationId
      * @param chatMessageId
      * @param requestBody
      * @returns ChatMessageRead Successful Response
      * @throws ApiError
      */
-    public static updateChatMessageApiV1ChatMessagesChatMessageIdPut(
+    public static updateChatMessageApiV1WorkspacesWorkspaceIdConversationsConversationIdChatMessagesChatMessageIdPut(
+        workspaceId: string,
+        conversationId: string,
         chatMessageId: string,
         requestBody: ChatMessageUpdate,
     ): CancelablePromise<ChatMessageRead> {
         return __request(OpenAPI, {
             method: 'PUT',
-            url: '/api/v1/chat_messages/{chat_message_id}',
+            url: '/api/v1/workspaces/{workspace_id}/conversations/{conversation_id}/chat_messages/{chat_message_id}',
             path: {
+                'workspace_id': workspaceId,
+                'conversation_id': conversationId,
                 'chat_message_id': chatMessageId,
             },
             body: requestBody,
@@ -99,17 +123,22 @@ export class ChatMessageService {
     }
     /**
      * Delete Chat Message
+     * @param conversationId
      * @param chatMessageId
      * @returns DeleteResponse Successful Response
      * @throws ApiError
      */
-    public static deleteChatMessageApiV1ChatMessagesChatMessageIdDelete(
+    public static deleteChatMessageApiV1WorkspacesWorkspaceIdConversationsConversationIdChatMessagesChatMessageIdDelete(
+        workspaceId: string,
+        conversationId: string,
         chatMessageId: string,
     ): CancelablePromise<DeleteResponse> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/v1/chat_messages/{chat_message_id}',
+            url: '/api/v1/workspaces/{workspace_id}/conversations/{conversation_id}/chat_messages/{chat_message_id}',
             path: {
+                'workspace_id': workspaceId,
+                'conversation_id': conversationId,
                 'chat_message_id': chatMessageId,
             },
             errors: {

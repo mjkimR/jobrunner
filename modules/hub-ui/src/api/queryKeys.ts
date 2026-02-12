@@ -32,14 +32,14 @@ export const queryKeys = {
   },
   conversations: {
     all: ['conversations'] as const,
-    list: (params: { offset?: number; limit?: number } = {}) =>
-      ['conversations', 'list', params] as const,
-    detail: (id: string) => ['conversations', 'detail', id] as const,
+    list: (workspaceId: string, params: { offset?: number; limit?: number } = {}) =>
+      ['workspaces', workspaceId, 'conversations', 'list', params] as const,
+    detail: (workspaceId: string, id: string) => ['workspaces', workspaceId, 'conversations', 'detail', id] as const,
   },
   chatMessages: {
     all: ['chatMessages'] as const,
-    list: (conversationId: string, params: { offset?: number; limit?: number } = {}) =>
-      ['chatMessages', 'list', conversationId, params] as const,
+    list: (workspaceId: string, conversationId: string, params: { offset?: number; limit?: number } = {}) =>
+      ['workspaces', workspaceId, 'conversations', conversationId, 'chatMessages', 'list', params] as const,
   },
   routingLogs: {
     all: ['routingLogs'] as const,

@@ -8,13 +8,13 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 export default function ConversationDetail() {
-    const { conversationId } = useParams<{ conversationId: string }>();
+    const { workspaceId, conversationId } = useParams<{ workspaceId: string; conversationId: string }>();
     
     // Fetch conversation details
-    const { data: conversation, isLoading: isConversationLoading } = useConversationQuery(conversationId!);
+    const { data: conversation, isLoading: isConversationLoading } = useConversationQuery(workspaceId!, conversationId!);
 
     // Fetch messages
-    const { data: messagesData, isLoading: isMessagesLoading } = useChatMessagesQuery(conversationId!, {
+    const { data: messagesData, isLoading: isMessagesLoading } = useChatMessagesQuery(workspaceId!, conversationId!, {
         limit: 100 // Fetch a reasonable amount of history
     });
 

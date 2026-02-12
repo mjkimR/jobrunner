@@ -72,10 +72,22 @@ def do_run_migrations(connection):
                 directives[:] = []
                 print("No changes in schema detected.")
 
+    def render_item(type_, obj, autogen_context):
+        """Add imports for JSONB astext_type."""
+        if type_ == "type" and hasattr(obj, "dialect_impl"):
+            # Check if this is a JSONB variant
+            from sqlalchemy.dialects import postgresql
+            dialect_impl = obj.dialect_impl(postgresql.dialect())
+            if isinstance(dialect_impl, postgresql.JSONB):
+                # Ensure Text is imported
+                autogen_context.imports.add("from sqlalchemy import Text")
+        return False
+
     context.configure(
         connection=connection,
         target_metadata=target_metadata,
         process_revision_directives=process_revision_directives,
+        render_item=render_item,
     )
 
     with context.begin_transaction():

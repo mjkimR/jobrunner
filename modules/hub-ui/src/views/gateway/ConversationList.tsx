@@ -9,7 +9,7 @@ export default function ConversationList() {
     const { workspaceId } = useParams<{ workspaceId: string }>();
     const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
 
-    const { data, isLoading } = useConversationsQuery({
+    const { data, isLoading } = useConversationsQuery(workspaceId!, {
         offset: pagination.pageIndex * pagination.pageSize,
         limit: pagination.pageSize,
     });

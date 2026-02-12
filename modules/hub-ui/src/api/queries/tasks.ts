@@ -9,7 +9,7 @@ export function useTasksQuery(workspaceId: string, params: { offset?: number; li
 
   return useQuery({
     queryKey: queryKeys.tasks.list(workspaceId, { offset, limit }),
-    queryFn: () => TaskService.getTasksApiV1WorkspaceWorkspaceIdTasksGet(workspaceId, offset, limit ?? 100),
+    queryFn: () => TaskService.getTasksApiV1WorkspacesWorkspaceIdTasksGet(workspaceId, offset, limit ?? 100),
     enabled: !!workspaceId,
   })
 }
@@ -17,20 +17,21 @@ export function useTasksQuery(workspaceId: string, params: { offset?: number; li
 export function useCreateTaskMutation(workspaceId: string) {
     const queryClient = useQueryClient()
     return useMutation({
-        mutationFn: (data: TaskCreate) => TaskService.createTaskApiV1WorkspaceWorkspaceIdTasksPost(workspaceId, data),
+        mutationFn: (data: TaskCreate) => TaskService.createTaskApiV1WorkspacesWorkspaceIdTasksPost(workspaceId, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.tasks.list(workspaceId) })
         },
     })
 }
 
-export function useUpdateTaskMutation(workspaceId: string, taskId: string) {
+export function useUpdateTaskMutation(workspaceId: string) {
     const queryClient = useQueryClient()
     return useMutation({
-        mutationFn: (data: TaskUpdate) => TaskService.updateTaskApiV1WorkspaceWorkspaceIdTasksTaskIdPut(workspaceId, taskId, data),
-        onSuccess: () => {
+        mutationFn: ({ taskId, data }: { taskId: string; data: TaskUpdate }) =>
+            TaskService.updateTaskApiV1WorkspacesWorkspaceIdTasksTaskIdPut(workspaceId, taskId, data),
+        onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: queryKeys.tasks.list(workspaceId) })
-            queryClient.invalidateQueries({ queryKey: queryKeys.tasks.detail(workspaceId, taskId) })
+            queryClient.invalidateQueries({ queryKey: queryKeys.tasks.detail(workspaceId, data.id) })
         },
     })
 }
@@ -38,8 +39,8 @@ export function useUpdateTaskMutation(workspaceId: string, taskId: string) {
 export function useDeleteTaskMutation(workspaceId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (taskId: string) => TaskService.deleteTaskApiV1WorkspaceWorkspaceIdTasksTaskIdDelete(workspaceId, taskId),
-    onSuccess: (_data, _taskId) => {
+    mutationFn: (taskId: string) => TaskService.deleteTaskApiV1WorkspacesWorkspaceIdTasksTaskIdDelete(workspaceId, taskId),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tasks.list(workspaceId) })
     },
   })

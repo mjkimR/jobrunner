@@ -18,7 +18,7 @@ export class TaskTagService {
      * @returns TaskTagRead Successful Response
      * @throws ApiError
      */
-    public static createTaskTagApiV1WorkspaceWorkspaceIdTaskTagsPost(
+    public static createTaskTagApiV1WorkspacesWorkspaceIdTaskTagsPost(
         workspaceId: string,
         requestBody: TaskTagCreate,
     ): CancelablePromise<TaskTagRead> {
@@ -43,7 +43,7 @@ export class TaskTagService {
      * @returns PaginatedList_TaskTagRead_ Successful Response
      * @throws ApiError
      */
-    public static getTaskTagsApiV1WorkspaceWorkspaceIdTaskTagsGet(
+    public static getTaskTagsApiV1WorkspacesWorkspaceIdTaskTagsGet(
         workspaceId: string,
         offset?: number,
         limit: number = 100,
@@ -70,7 +70,7 @@ export class TaskTagService {
      * @returns TaskTagRead Successful Response
      * @throws ApiError
      */
-    public static getTaskTagApiV1WorkspaceWorkspaceIdTaskTagsTaskTagIdGet(
+    public static getTaskTagApiV1WorkspacesWorkspaceIdTaskTagsTaskTagIdGet(
         workspaceId: string,
         taskTagId: string,
     ): CancelablePromise<TaskTagRead> {
@@ -94,7 +94,7 @@ export class TaskTagService {
      * @returns TaskTagRead Successful Response
      * @throws ApiError
      */
-    public static updateTaskTagApiV1WorkspaceWorkspaceIdTaskTagsTaskTagIdPut(
+    public static updateTaskTagApiV1WorkspacesWorkspaceIdTaskTagsTaskTagIdPut(
         workspaceId: string,
         taskTagId: string,
         requestBody: TaskTagUpdate,
@@ -120,7 +120,7 @@ export class TaskTagService {
      * @returns DeleteResponse Successful Response
      * @throws ApiError
      */
-    public static deleteTaskTagApiV1WorkspaceWorkspaceIdTaskTagsTaskTagIdDelete(
+    public static deleteTaskTagApiV1WorkspacesWorkspaceIdTaskTagsTaskTagIdDelete(
         workspaceId: string,
         taskTagId: string,
     ): CancelablePromise<DeleteResponse> {

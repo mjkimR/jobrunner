@@ -1,0 +1,19 @@
+﻿
+> hub-ui@0.0.0 build
+> tsc -b && vite build
+
+src/api/queries/tasks.ts(12,32): error TS2551: Property 'getTasksApiV1WorkspaceWorkspaceIdTasksGet' does not exist on type 'typeof TaskService'. Did you mean 'getTasksApiV1WorkspacesWorkspaceIdTasksGet'?
+src/api/queries/tasks.ts(20,55): error TS2551: Property 'createTaskApiV1WorkspaceWorkspaceIdTasksPost' does not exist on type 'typeof TaskService'. Did you mean 'createTaskApiV1WorkspacesWorkspaceIdTasksPost'?
+src/api/queries/tasks.ts(30,55): error TS2551: Property 'updateTaskApiV1WorkspaceWorkspaceIdTasksTaskIdPut' does not exist on type 'typeof TaskService'. Did you mean 'updateTaskApiV1WorkspacesWorkspaceIdTasksTaskIdPut'?
+src/api/queries/tasks.ts(41,49): error TS2551: Property 'deleteTaskApiV1WorkspaceWorkspaceIdTasksTaskIdDelete' does not exist on type 'typeof TaskService'. Did you mean 'deleteTaskApiV1WorkspacesWorkspaceIdTasksTaskIdDelete'?
+src/api/queries/taskTags.ts(12,39): error TS2551: Property 'getTaskTagsApiV1WorkspaceWorkspaceIdTaskTagsGet' does not exist on type 'typeof TaskTagService'. Did you mean 'getTaskTagsApiV1WorkspacesWorkspaceIdTaskTagsGet'?
+src/api/queries/taskTags.ts(20,61): error TS2551: Property 'createTaskTagApiV1WorkspaceWorkspaceIdTaskTagsPost' does not exist on type 'typeof TaskTagService'. Did you mean 'createTaskTagApiV1WorkspacesWorkspaceIdTaskTagsPost'?
+src/api/queries/taskTags.ts(31,28): error TS2551: Property 'updateTaskTagApiV1WorkspaceWorkspaceIdTaskTagsTaskTagIdPut' does not exist on type 'typeof TaskTagService'. Did you mean 'updateTaskTagApiV1WorkspacesWorkspaceIdTaskTagsTaskTagIdPut'?
+src/api/queries/taskTags.ts(41,55): error TS2551: Property 'deleteTaskTagApiV1WorkspaceWorkspaceIdTaskTagsTaskTagIdDelete' does not exist on type 'typeof TaskTagService'. Did you mean 'deleteTaskTagApiV1WorkspacesWorkspaceIdTaskTagsTaskTagIdDelete'?
+src/api/queries/useChatMessagesQuery.ts(8,39): error TS2339: Property 'getChatMessagesApiV1ChatMessagesGet' does not exist on type 'typeof ChatMessageService'.
+src/api/queries/useConversationsQuery.ts(9,9): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/views/gateway/ConversationDetail.tsx(37,54): error TS2339: Property 'title' does not exist on type 'PaginatedList_ConversationRead_'.
+src/views/gateway/ConversationDetail.tsx(38,64): error TS2339: Property 'id' does not exist on type 'PaginatedList_ConversationRead_'.
+src/views/gateway/ConversationDetail.tsx(40,54): error TS2339: Property 'status' does not exist on type 'PaginatedList_ConversationRead_'.
+src/views/gateway/ConversationDetail.tsx(41,43): error TS2339: Property 'status' does not exist on type 'PaginatedList_ConversationRead_'.

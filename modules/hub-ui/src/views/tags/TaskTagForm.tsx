@@ -57,11 +57,11 @@ export default function TaskTagForm({ workspaceId, tag, onSuccess }: TaskTagForm
     }, [tag, form]);
 
     const createMutation = useCreateTaskTagMutation(workspaceId);
-    const updateMutation = useUpdateTaskTagMutation(workspaceId, tag?.id ?? '');
+    const updateMutation = useUpdateTaskTagMutation(workspaceId);
 
     function onSubmit(values: z.infer<typeof tagSchema>) {
         if (tag) {
-            updateMutation.mutate(values as TaskTagUpdate, {
+            updateMutation.mutate({ tagId: tag.id, data: values as TaskTagUpdate }, {
                 onSuccess: onSuccess,
             });
         } else {

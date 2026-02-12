@@ -18,7 +18,7 @@ export class TaskHistoriesService {
      * @returns TaskHistoryRead Successful Response
      * @throws ApiError
      */
-    public static createTaskHistoryApiV1WorkspaceWorkspaceIdTaskHistoriesPost(
+    public static createTaskHistoryApiV1WorkspacesWorkspaceIdTaskHistoriesPost(
         workspaceId: string,
         requestBody: TaskHistoryCreate,
     ): CancelablePromise<TaskHistoryRead> {
@@ -43,7 +43,7 @@ export class TaskHistoriesService {
      * @returns PaginatedList_TaskHistoryRead_ Successful Response
      * @throws ApiError
      */
-    public static getTaskHistoriesApiV1WorkspaceWorkspaceIdTaskHistoriesGet(
+    public static getTaskHistoriesApiV1WorkspacesWorkspaceIdTaskHistoriesGet(
         workspaceId: string,
         offset?: number,
         limit: number = 100,
@@ -70,7 +70,7 @@ export class TaskHistoriesService {
      * @returns TaskHistoryRead Successful Response
      * @throws ApiError
      */
-    public static getTaskHistoryApiV1WorkspaceWorkspaceIdTaskHistoriesTaskHistoryIdGet(
+    public static getTaskHistoryApiV1WorkspacesWorkspaceIdTaskHistoriesTaskHistoryIdGet(
         workspaceId: string,
         taskHistoryId: string,
     ): CancelablePromise<TaskHistoryRead> {
@@ -94,7 +94,7 @@ export class TaskHistoriesService {
      * @returns TaskHistoryRead Successful Response
      * @throws ApiError
      */
-    public static updateTaskHistoryApiV1WorkspaceWorkspaceIdTaskHistoriesTaskHistoryIdPut(
+    public static updateTaskHistoryApiV1WorkspacesWorkspaceIdTaskHistoriesTaskHistoryIdPut(
         workspaceId: string,
         taskHistoryId: string,
         requestBody: TaskHistoryUpdate,
@@ -120,7 +120,7 @@ export class TaskHistoriesService {
      * @returns DeleteResponse Successful Response
      * @throws ApiError
      */
-    public static deleteTaskHistoryApiV1WorkspaceWorkspaceIdTaskHistoriesTaskHistoryIdDelete(
+    public static deleteTaskHistoryApiV1WorkspacesWorkspaceIdTaskHistoriesTaskHistoryIdDelete(
         workspaceId: string,
         taskHistoryId: string,
     ): CancelablePromise<DeleteResponse> {

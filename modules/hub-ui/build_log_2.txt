@@ -1,0 +1,8 @@
+﻿
+> hub-ui@0.0.0 build
+> tsc -b && vite build
+
+src/api/queries/taskTags.ts(36,17): error TS6133: 'data' is declared but its value is never read.
+src/views/tags/TaskTagForm.tsx(60,66): error TS2554: Expected 1 arguments, but got 2.
+src/views/tags/TaskTagForm.tsx(64,35): error TS2345: Argument of type 'TaskTagUpdate' is not assignable to parameter of type '{ tagId: string; data: TaskTagUpdate; }'.
+  Type 'TaskTagUpdate' is missing the following properties from type '{ tagId: string; data: TaskTagUpdate; }': tagId, data
