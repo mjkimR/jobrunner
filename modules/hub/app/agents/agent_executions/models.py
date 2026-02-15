@@ -45,7 +45,7 @@ class AgentExecution(Base, UUIDMixin, TimestampMixin):
 
     # Usage
     token_usage: Mapped[dict[str, Any] | None] = mapped_column(JSON_VARIANT, nullable=True)
-    dagster_run_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    run_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
     # Relationships
     configured_agent: Mapped[Optional["ConfiguredAgent"]] = relationship("ConfiguredAgent")

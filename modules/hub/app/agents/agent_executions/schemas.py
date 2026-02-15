@@ -27,7 +27,7 @@ class AgentExecutionBase(BaseModel):
     started_at: datetime.datetime | None = Field(default=None, description="Start timestamp")
     completed_at: datetime.datetime | None = Field(default=None, description="Completion timestamp")
     token_usage: dict[str, Any] | None = Field(default=None, description="Token usage data")
-    dagster_run_id: str | None = Field(default=None, max_length=100, description="Dagster Run ID")
+    run_id: str | None = Field(default=None, max_length=100, description="Run ID")
 
 
 class AgentExecutionCreate(AgentExecutionBase):
@@ -45,7 +45,7 @@ class AgentExecutionUpdate(BaseModel):
     started_at: datetime.datetime | None = Field(default=None, description="Start timestamp")
     completed_at: datetime.datetime | None = Field(default=None, description="Completion timestamp")
     token_usage: dict[str, Any] | None = Field(default=None, description="Token usage data")
-    dagster_run_id: str | None = Field(default=None, max_length=100, description="Dagster Run ID")
+    run_id: str | None = Field(default=None, max_length=100, description="Run ID")
 
 
 class AgentExecutionRead(UUIDSchemaMixin, AgentExecutionBase):

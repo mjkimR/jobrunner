@@ -14,4 +14,4 @@ fi
 
 echo ""
 echo "JobRunner started!"
-echo "Dagster UI: http://localhost:3000"
+echo "Prefect UI: http://localhost:4200"

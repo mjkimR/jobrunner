@@ -38,7 +38,7 @@ class TaskComplexity(str, enum.Enum):
 
 
 class TaskQueue(str, enum.Enum):
-    """Target processing queue (for Dagster sensor polling)."""
+    """Target processing queue"""
 
     DEFAULT = "default"
     HOST_AGENT = "host-agent"

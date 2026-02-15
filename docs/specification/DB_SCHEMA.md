@@ -93,15 +93,15 @@ Host Agent 또는 사용자가 관리하는 TODO 항목. **Workspace별로 분�
 
 **컬럼 설명:**
 
-| 컬럼           | 설명                                    | Enum 값                                                 |
-| -------------- | --------------------------------------- | ------------------------------------------------------- |
-| `status`       | Task 진행 상태                          | `pending`, `in_progress`, `review`, `done`, `cancelled` |
-| `priority`     | 우선순위                                | `low`, `normal`, `high`, `critical`                     |
-| `urgency`      | 긴급도 (라우팅 결정에 사용)             | `low`, `normal`, `high`, `critical`                     |
-| `complexity`   | 복잡도 (라우팅 결정에 사용)             | `simple`, `moderate`, `complex`                         |
-| `queue`        | 처리 대상 큐 (Dagster sensor polling용) | `default`, `host-agent`, `local-agent`, `workflow` 등   |
-| `source`       | Task 생성 출처                          | `user`, `host_agent`, `gateway`, `workflow`, `system`   |
-| `external_ref` | 외부 시스템 연동 참조                   | GitHub Issue URL 등                                     |
+| 컬럼           | 설명               | Enum 값                                                 |
+| -------------- |------------------| ------------------------------------------------------- |
+| `status`       | Task 진행 상태       | `pending`, `in_progress`, `review`, `done`, `cancelled` |
+| `priority`     | 우선순위             | `low`, `normal`, `high`, `critical`                     |
+| `urgency`      | 긴급도 (라우팅 결정에 사용) | `low`, `normal`, `high`, `critical`                     |
+| `complexity`   | 복잡도 (라우팅 결정에 사용) | `simple`, `moderate`, `complex`                         |
+| `queue`        | 처리 대상 큐          | `default`, `host-agent`, `local-agent`, `workflow` 등   |
+| `source`       | Task 생성 출처       | `user`, `host_agent`, `gateway`, `workflow`, `system`   |
+| `external_ref` | 외부 시스템 연동 참조     | GitHub Issue URL 등                                     |
 
 **관계:**
 
@@ -111,7 +111,7 @@ Host Agent 또는 사용자가 관리하는 TODO 항목. **Workspace별로 분�
 
 - `host-agent`: Host Agent만 처리 가능 (복잡한 판단, 코드 생성 등)
 - `local-agent`: Local LLM Agent가 처리 가능한 작업
-- `workflow`: Dagster Job으로 처리할 수 있는 정형화된 작업
+- `workflow`: Job으로 처리할 수 있는 정형화된 작업
 - `default`: 라우팅 결정 전 기본 큐
 
 ---
@@ -178,7 +178,7 @@ Task 상태 변경 및 할당 이력. Agent 할당도 이력으로 관리하여 
 ## 2. Agents (Agent Manager)
 
 > [!NOTE]
-> Hub는 Agent 설정(Configuration)만 관리하고, 실제 LLM 호출 및 실행은 Workflow Engine(Dagster)에서 처리합니다.
+> Hub는 Agent 설정(Configuration)만 관리하고, 실제 LLM 호출 및 실행은 Workflow Engine에서 처리합니다.
 >
 > - **Configured Agent**: Hub에서 Model + Capability로 설정, Workflow Engine에서 실행
 > - **Graph Agent**: Workflow Engine에서 LangGraph Asset으로 직접 정의
@@ -283,7 +283,7 @@ Agent 실행 이력. Configured Agent 및 Graph Agent 모두의 실행을 추적
 │     started_at          TIMESTAMP     NULL                                  │
 │     completed_at        TIMESTAMP     NULL                                  │
 │     token_usage         JSONB         NULL                                  │
-│     dagster_run_id      VARCHAR(100)  NULL      -- Dagster Run ID 참조      │
+│     run_id              VARCHAR(100)  NULL      -- Run ID 참조      │
 │     created_at          TIMESTAMP     NOT NULL  DEFAULT now()               │
 │     updated_at          TIMESTAMP     NOT NULL  DEFAULT now()               │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -291,15 +291,15 @@ Agent 실행 이력. Configured Agent 및 Graph Agent 모두의 실행을 추적
 
 **컬럼 설명:**
 
-| 컬럼                  | 설명                                             | Enum 값                                                                 |
-| --------------------- | ------------------------------------------------ | ----------------------------------------------------------------------- |
-| `agent_type`          | Agent 유형                                       | `configured`, `graph`                                                   |
+| 컬럼            | 설명                                             | Enum 값                                                                 |
+| ------------- | ------------------------------------------------ | ----------------------------------------------------------------------- |
+| `agent_type`  | Agent 유형                                       | `configured`, `graph`                                                   |
 | `configured_agent_id` | Configured Agent FK (agent_type=configured일 때) | -                                                                       |
-| `graph_agent_name`    | LangGraph Asset 이름 (agent_type=graph일 때)     | `react_agent`, `plan_execute_agent`                                     |
-| `execution_type`      | 실행 유형                                        | `task_processing`, `routing_decision`, `chat_response`, `workflow_step` |
-| `status`              | 실행 상태                                        | `pending`, `running`, `success`, `failed`, `cancelled`, `timeout`       |
-| `token_usage`         | LLM 토큰 사용량                                  | `{"input_tokens": N, "output_tokens": N}`                               |
-| `dagster_run_id`      | Dagster 실행 ID                                  | Workflow Engine 실행 추적용                                             |
+| `graph_agent_name` | LangGraph Asset 이름 (agent_type=graph일 때)     | `react_agent`, `plan_execute_agent`                                     |
+| `execution_type` | 실행 유형                                        | `task_processing`, `routing_decision`, `chat_response`, `workflow_step` |
+| `status`      | 실행 상태                                        | `pending`, `running`, `success`, `failed`, `cancelled`, `timeout`       |
+| `token_usage` | LLM 토큰 사용량                                  | `{"input_tokens": N, "output_tokens": N}`                               |
+| `run_id`      | 실행 ID                                  | Workflow Engine 실행 추적용                                             |
 
 ---
 
@@ -448,7 +448,7 @@ CREATE INDEX idx_workspaces_active ON workspaces(is_active);
 CREATE INDEX idx_tasks_workspace ON tasks(workspace_id);
 CREATE INDEX idx_tasks_status ON tasks(status);
 CREATE INDEX idx_tasks_queue ON tasks(queue);
-CREATE INDEX idx_tasks_status_queue ON tasks(status, queue);  -- Dagster sensor polling용
+CREATE INDEX idx_tasks_status_queue ON tasks(status, queue);
 CREATE INDEX idx_tasks_workspace_status ON tasks(workspace_id, status);
 CREATE INDEX idx_tasks_workspace_queue ON tasks(workspace_id, queue);
 CREATE INDEX idx_tasks_priority ON tasks(priority);
@@ -476,7 +476,7 @@ CREATE INDEX idx_agent_executions_configured ON agent_executions(configured_agen
 CREATE INDEX idx_agent_executions_task ON agent_executions(task_id);
 CREATE INDEX idx_agent_executions_status ON agent_executions(status);
 CREATE INDEX idx_agent_executions_created ON agent_executions(created_at DESC);
-CREATE INDEX idx_agent_executions_dagster ON agent_executions(dagster_run_id);
+CREATE INDEX idx_agent_executions_run_id ON agent_executions(run_id);
 ```
 
 ### Gateway

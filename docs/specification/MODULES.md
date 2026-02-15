@@ -20,7 +20,7 @@
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │ 1. Host Agent   │    │ 2. Workflow     │    │ 3. Task         │
 │    Tools        │    │    Engine       │    │    Manager      │
-│                 │    │    (Dagster)    │    │                 │
+│                 │    │                 │    │                 │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
                                   ↓
                        ┌─────────────────┐
@@ -48,11 +48,11 @@ Host Agent(Gemini CLI, Claude Code 등)가 시스템을 제어하기 위해 사�
 
 ### 1.1. Agent Skill (SKILL.md)
 
-| 항목 | 설명 |
-|------|------|
-| **역할** | Host Agent의 행동 지침 제공 |
-| **형식** | SKILL.md + 스크립트 |
-| **예시** | `jr_usage.md` - jr CLI 사용법, `dagster_guide.md` - Dagster 작업 가이드 |
+| 항목 | 설명                                                                |
+|------|-------------------------------------------------------------------|
+| **역할** | Host Agent의 행동 지침 제공                                              |
+| **형식** | SKILL.md + 스크립트                                                   |
+| **예시** | `jr_usage.md` - jr CLI 사용법, `workflow_guide.md` - Workflow 작업 가이드 |
 
 ### 1.2. CLI Tool (`jr`)
 
@@ -64,10 +64,10 @@ Host Agent(Gemini CLI, Claude Code 등)가 시스템을 제어하기 위해 사�
 
 ### 1.3. MCP Server 연동
 
-| 항목 | 설명 |
-|------|------|
-| **역할** | Host Agent가 외부 도구/서비스에 직접 접근 |
-| **후보** | Dagster MCP, GitHub MCP, Filesystem MCP |
+| 항목 | 설명                                          |
+|------|---------------------------------------------|
+| **역할** | Host Agent가 외부 도구/서비스에 직접 접근                |
+| **후보** | Workflow MCP, GitHub MCP, Filesystem MCP    |
 | **채용 조건** | MCP 서버 품질에 따라 채용 여부 판단. CLI 대비 이점이 명확할 때 사용. |
 
 > [!NOTE]
@@ -76,21 +76,21 @@ Host Agent(Gemini CLI, Claude Code 등)가 시스템을 제어하기 위해 사�
 
 ---
 
-## 2. Workflow Engine (Dagster)
+## 2. Workflow Engine
 
 정형화된 작업의 스케줄링과 실행을 담당.
 
-| 항목 | 설명 |
-|------|------|
+| 항목 | 설명                         |
+|------|----------------------------|
 | **역할** | 주기적 작업 실행, Job-Agent 협업 조율 |
-| **기술 스택** | Dagster, Docker Compose |
-| **핵심 기능** | Asset 관리, 스케줄링, 센서, 실행 로깅 |
+| **기술 스택** | Prefect, Docker Compose    |
+| **핵심 기능** | Asset 관리, 스케줄링, 센서, 실행 로깅  |
 
 ### 주요 책임
 
 - **주기적 작업:** 매일/매주 반복 실행되는 Job 스케줄링
 - **Job-Agent 협업:** Agent가 생성한 결과를 Job이 후처리하거나, Job 결과를 Agent가 분석
-- **실행 모니터링:** 실행 상태, 로그, 에러를 Dagster UI에서 시각화
+- **실행 모니터링:** 실행 상태, 로그, 에러를 Prefect UI에서 시각화
 
 ---
 
@@ -146,7 +146,7 @@ Hub에서 설정으로 정의되는 Agent. Model + Skill/MCP 조합.
 | 항목 | 설명 |
 |------|------|
 | **정의 위치** | Hub (configured_agents 테이블) |
-| **실행 위치** | Workflow Engine (Dagster Op) |
+| **실행 위치** | Workflow Engine |
 | **구성 요소** | AI Model + System Prompt + Skills + MCPs |
 | **적합한 작업** | 단일 LLM 호출 기반 작업, 간단한 추론 |
 
@@ -167,7 +167,7 @@ Workflow Engine에서 직접 정의되는 복잡한 Agent. LangGraph Asset으로
 
 | 항목 | 설명 |
 |------|------|
-| **정의 위치** | Workflow Engine (Dagster Asset/Op) |
+| **정의 위치** | Workflow Engine |
 | **실행 위치** | Workflow Engine |
 | **구성 요소** | LangGraph Graph + State + Nodes |
 | **적합한 작업** | 멀티스텝 추론, ReAct, Plan-and-Execute |
@@ -203,7 +203,7 @@ Hub에서 관리하는 Registry 목록:
 ```
 1. Workflow Engine이 Hub API에서 Agent 설정 조회
 2. Configured Agent: 설정 기반으로 LangChain Agent 인스턴스화
-3. Graph Agent: Dagster Asset에서 직접 LangGraph 실행
+3. Graph Agent: Workflow에서 LangGraph 실행
 4. 실행 결과를 Hub의 agent_executions 테이블에 기록
 ```
 
@@ -284,7 +284,7 @@ graph TB
     end
     
     subgraph "2. Workflow Engine"
-        Dagster[Dagster]
+        Prefect[Prefect]
     end
     
     subgraph "3. Task Manager"
@@ -310,23 +310,23 @@ graph TB
     Gateway -.-> TaskDB
     
     CLI --> TaskAPI
-    CLI --> Dagster
-    MCP --> Dagster
+    CLI --> Prefect
+    MCP --> Prefect
     
     TaskAPI --> TaskDB
     
-    LocalAgent --> Dagster
-    CloudAgent --> Dagster
+    LocalAgent --> Prefect
+    CloudAgent --> Prefect
 ```
 
 ---
 
 ## Phase별 구현 범위
 
-| 모듈 | Phase 1 | Phase 2 | Phase 3 |
-|------|---------|---------|---------|
-| **Host Agent Tools** | SKILL.md, jr CLI 기본 | MCP 연동 검토 | MCP 확장 |
-| **Workflow Engine** | Dagster 기본 구성 | 동적 Asset 로딩 | Job-Agent 협업 |
-| **Task Manager** | - | - | Task CRUD, 상태 관리 |
-| **Agent Manager** | - | - | Local/Cloud Agent |
-| **Local Agent Gateway** | - | - | Chat UI, Router |
+| 모듈 | Phase 1 | Phase 2    | Phase 3 |
+|------|---------|------------|---------|
+| **Host Agent Tools** | SKILL.md, jr CLI 기본 | MCP 연동 검토  | MCP 확장 |
+| **Workflow Engine** | Prefect 기본 구성 | 동적 task 로딩 | Job-Agent 협업 |
+| **Task Manager** | - | -          | Task CRUD, 상태 관리 |
+| **Agent Manager** | - | -          | Local/Cloud Agent |
+| **Local Agent Gateway** | - | -          | Chat UI, Router |
